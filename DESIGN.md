@@ -6,7 +6,9 @@ All tokens and components live in [`web/static/sayso.css`](web/static/sayso.css)
 
 ## Colour
 
-| Token | Light | Dark | Use |
+The site is **light-only** for now. The dark values below are kept in the CSS for later; they only apply if `<html data-theme="dark">` is set, and no page sets it.
+
+| Token | Light | Dark (later) | Use |
 |---|---|---|---|
 | `--bg` | `#FAFAF9` | `#0E0F0E` | Page background |
 | `--surface` | `#FFFFFF` | `#171917` | Cards, header |

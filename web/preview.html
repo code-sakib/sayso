@@ -30,7 +30,6 @@
     .swatch { border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--surface); }
     .swatch div { height: 56px; }
     .swatch p { padding: 8px 10px; font-size: 12px; }
-    .theme-toggle { position: fixed; right: 16px; bottom: 16px; z-index: 20; box-shadow: var(--shadow-float); }
     @media (max-width: 900px) {
       .hero-grid, .try-grid { grid-template-columns: 1fr; }
       .float-chip.a { left: 8px; } .float-chip.b { right: 8px; }
@@ -270,8 +269,6 @@
     </div>
   </footer>
 
-  <button class="btn btn-secondary btn-sm theme-toggle" id="themeBtn" type="button">Toggle dark</button>
-
   <script>
     // Fade-in on scroll
     const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), { threshold: 0.15 });
@@ -294,14 +291,6 @@
     // Choice toggles
     document.querySelectorAll('.choice').forEach(c => c.addEventListener('click', () => {
       document.querySelectorAll('.choice').forEach(x => x.classList.toggle('selected', x === c));
-    }));
-
-    // Theme toggle (preview only)
-    document.getElementById('themeBtn').addEventListener('click', () => {
-      const r = document.documentElement;
-      const dark = r.dataset.theme === 'dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-      r.dataset.theme = dark ? 'light' : 'dark';
-    });
-  </script>
+    }));  </script>
 </body>
 </html>
