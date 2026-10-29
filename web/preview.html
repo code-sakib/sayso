@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SaySo design preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="static/sayso.css">
+  <style>
+    /* Preview-only layout helpers */
+    .hero { padding: 88px 0 72px; }
+    .hero-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 48px; align-items: center; }
+    .hero .display span { white-space: nowrap; }
+    .hero .display { margin: 24px 0 20px; }
+    .hero .cta { margin-top: 32px; gap: 20px; }
+    .trust { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); gap: 24px; font-size: 13px; font-weight: 500; }
+    .trust svg { width: 15px; height: 15px; }
+    .report-float { position: relative; }
+    .report-float .card { box-shadow: var(--shadow-float); }
+    .float-chip { position: absolute; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-float); font-size: 13px; font-weight: 600; }
+    .float-chip .eyebrow { display: block; font-size: 10px; }
+    .float-chip.a { left: -28px; bottom: -24px; }
+    .float-chip.b { right: -18px; bottom: -24px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    .try-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sim-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; min-height: 100%; padding: 40px 24px; }
+    .tokens { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .swatch { border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--surface); }
+    .swatch div { height: 56px; }
+    .swatch p { padding: 8px 10px; font-size: 12px; }
+    .theme-toggle { position: fixed; right: 16px; bottom: 16px; z-index: 20; box-shadow: var(--shadow-float); }
+    @media (max-width: 900px) {
+      .hero-grid, .try-grid { grid-template-columns: 1fr; }
+      .float-chip.a { left: 8px; } .float-chip.b { right: 8px; }
+      .tokens { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: 1fr; }
+      .hero { padding: 48px 0 40px; }
+      .hero .display span { white-space: normal; }
+      .float-chip { position: static; margin-top: 12px; }
+      .float-chip.b { margin-left: 8px; }
+      .report-float { display: flex; flex-wrap: wrap; }
+      .report-float .card { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a href="#" class="logo" aria-label="SaySo home">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="10.25" stroke="currentColor" stroke-width="2.5"/>
+          <circle class="rec-fill" cx="12" cy="12" r="4"/>
+        </svg>
+        sayso
+      </a>
+      <nav class="nav-links">
+        <a href="#how" class="hide-sm">How it works</a>
+        <a href="#report" class="hide-sm">Sample report</a>
+        <a href="#try" class="quiet hide-sm">Try the badge</a>
+        <a href="#try" class="btn btn-primary btn-sm">Upload a sale
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="pill"><span class="dot is-rec live"></span>Built on Meta SAM + Muse <span class="tag">v0.1</span></span>
+          <h1 class="display"><span>Customers walk out.</span><br><span class="accent">Now you'll know why.</span></h1>
+          <p class="lead">A small badge hears your salesperson. Your store camera sees the walkout. SaySo joins the two and tells your team exactly what to say next time.</p>
+          <div class="row cta">
+            <a href="#report" class="btn btn-primary btn-lg">Try a sample report
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a href="#try" class="play-link"><span class="circle"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l14 8-14 8z"/></svg></span>See the badge</a>
+          </div>
+          <div class="row trust">
+            <span class="row" style="gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Customer voices removed</span>
+            <span class="row" style="gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Report in 2 minutes</span>
+            <span class="row" style="gap:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h10M4 19h7"/></svg>Hindi · English · Hinglish</span>
+          </div>
+        </div>
+
+        <div class="report-float">
+          <div class="card card-lg">
+            <div class="row" style="justify-content:space-between;margin-bottom:16px">
+              <span class="eyebrow">Coaching note · Andheri store</span>
+              <span class="status is-rec"><span class="dot is-rec"></span>Walkout</span>
+            </div>
+            <p class="h3" style="margin-bottom:6px">Customer asked about EMI, then waited 4 minutes.</p>
+            <p class="small muted" style="margin-bottom:18px">Rahul · 4:12 PM · iPhone 16 enquiry</p>
+            <div class="moment-quote" style="margin-bottom:12px"><span class="who">Staff</span>"Ek minute, main doosre customer ko dekh leta hoon."</div>
+            <div class="try-instead"><b>Try instead:</b> "Here's the EMI sheet. Have a look, I'll be back in one minute."</div>
+          </div>
+          <div class="float-chip b"><span class="tile" style="width:32px;height:32px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span><span class="eyebrow">Wait time</span>4 min 10 s</span></div>
+          <div class="float-chip a"><span class="dot is-rec live"></span><span><span class="eyebrow">Badge</span>Recording · staff only</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section" id="how" style="padding-top:48px">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">How it works</span>
+            <h2 class="h2">Three steps from<br>walkout to better sales.</h2>
+          </div>
+          <p class="small muted" style="max-width:280px">No new cameras. No dashboards to watch. One short note per salesperson, every day.</p>
+        </div>
+        <div class="grid-3">
+          <div class="card step fade-in">
+            <div class="step-top"><span class="step-num">01 /</span><span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span></div>
+            <h3 class="h3">Badge listens</h3>
+            <p>The salesperson wears SaySo. A red light shows when it records. Customer voices are removed automatically.</p>
+          </div>
+          <div class="card step fade-in">
+            <div class="step-top"><span class="step-num">02 /</span><span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+            <h3 class="h3">Camera sees</h3>
+            <p>Your existing CCTV shows when a customer waited too long or walked out. Meta SAM 3.1 finds the moment.</p>
+          </div>
+          <div class="card step fade-in">
+            <div class="step-top"><span class="step-num">03 /</span><span class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 10h8"/></svg></span></div>
+            <h3 class="h3">SaySo coaches</h3>
+            <p>Muse Spark links what was said to what happened, and writes what to say next time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sample report -->
+    <section class="section" id="report" style="background:var(--surface);border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft)">
+      <div class="container" style="max-width:900px">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Sample report</span>
+            <h2 class="h2">Rahul · Tuesday</h2>
+          </div>
+          <span class="pill"><span class="dot is-good"></span>Staff-only mode <span class="tag">on</span></span>
+        </div>
+
+        <div class="stats">
+          <div class="card stat"><div class="stat-top"><span class="stat-label">Conversations</span><span class="stat-sub">Today</span></div><div class="stat-value">14</div></div>
+          <div class="card stat"><div class="stat-top"><span class="stat-label">Walkouts</span><span class="stat-sub">Seen</span></div><div class="stat-value">3<small>of 14</small></div></div>
+          <div class="card stat"><div class="stat-top"><span class="stat-label">Longest wait</span><span class="stat-sub">Camera</span></div><div class="stat-value">4:10<small>min</small></div></div>
+        </div>
+
+        <div class="stack">
+          <div class="card moment is-rec">
+            <span class="moment-time">16:12</span>
+            <div class="moment-body">
+              <span class="status is-rec"><span class="dot is-rec"></span>Walkout after a long wait</span>
+              <div class="moment-quote"><span class="who">Staff</span>"Ek minute wait kijiye, main doosre customer ko dekh leta hoon."</div>
+              <p class="moment-note">Customer asked about EMI, waited 4 minutes, left at 16:16.</p>
+              <div class="try-instead"><b>Try instead:</b> hand over the EMI sheet before stepping away, and say when you'll be back.</div>
+            </div>
+          </div>
+          <div class="card moment">
+            <span class="moment-time">14:03</span>
+            <div class="moment-body">
+              <span class="status is-warn"><span class="dot is-warn"></span>Missed moment</span>
+              <div class="moment-quote"><span class="who">Staff</span>"Price fixed hai sir, discount nahi milega."</div>
+              <p class="moment-note">Customer was price-sensitive; no exchange offer was mentioned.</p>
+              <div class="try-instead"><b>Try instead:</b> "Price is fixed, but your old phone can bring it down by up to ₹12,000."</div>
+            </div>
+          </div>
+          <div class="card moment">
+            <span class="moment-time">11:40</span>
+            <div class="moment-body">
+              <span class="status is-good"><span class="dot is-good"></span>Great moment · sale made</span>
+              <div class="moment-quote"><span class="who">Staff</span>"Aap photos zyada lete ho? Then the Pro camera is worth it."</div>
+              <p class="moment-note">Asked about the customer's needs before recommending. Keep doing this.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Try it -->
+    <section class="section" id="try">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Try it</span>
+            <h2 class="h2">Upload a sale, or be the salesperson.</h2>
+          </div>
+        </div>
+        <div class="try-grid">
+          <div class="card card-lg stack" style="gap:16px">
+            <div>
+              <label class="label" for="store">Store name</label>
+              <input id="store" class="input" placeholder="e.g. Andheri West">
+            </div>
+            <div class="upload" tabindex="0">
+              <span class="tile tile-lg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></svg></span>
+              <strong>Drop the badge audio here</strong>
+              <span class="hint">WAV or M4A · up to 2 minutes</span>
+            </div>
+            <div class="upload" tabindex="0" style="min-height:120px">
+              <strong>Add store video (optional)</strong>
+              <span class="hint">MP4 · up to 30 seconds</span>
+            </div>
+            <div class="row">
+              <button class="choice selected" type="button"><span class="dot is-good"></span>Staff-only mode</button>
+              <button class="choice" type="button">Full conversation</button>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block" type="button">Get coaching report</button>
+          </div>
+
+          <div class="card card-lg">
+            <div class="sim-wrap">
+              <span class="rec-chip" id="recChip" hidden><span class="dot is-rec live"></span>Recording · 00:07</span>
+              <div class="badge-sim" id="badge">
+                <span class="led"></span>
+                <span class="badge-word">SAYSO</span>
+                <button class="badge-btn" id="badgeBtn" aria-label="Press the badge button"></button>
+              </div>
+              <div style="text-align:center">
+                <p class="h3" style="margin-bottom:6px">Badge playground</p>
+                <p class="small muted" style="max-width:300px">Press the button on the badge. Your mic records like the real badge, and you get a coaching note.</p>
+              </div>
+              <button class="btn btn-dark" id="simBtn" type="button">Start recording</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Design tokens (preview only) -->
+    <section class="section" style="padding-top:0">
+      <div class="container">
+        <div class="section-head"><div><span class="eyebrow">Design tokens</span><h2 class="h2">Colours and parts</h2></div></div>
+        <div class="tokens" style="margin-bottom:24px">
+          <div class="swatch"><div style="background:var(--bg)"></div><p class="mono">bg</p></div>
+          <div class="swatch"><div style="background:var(--surface)"></div><p class="mono">surface</p></div>
+          <div class="swatch"><div style="background:var(--ink)"></div><p class="mono">ink</p></div>
+          <div class="swatch"><div style="background:var(--primary)"></div><p class="mono">primary</p></div>
+          <div class="swatch"><div style="background:var(--dark)"></div><p class="mono">dark</p></div>
+          <div class="swatch"><div style="background:var(--rec)"></div><p class="mono">rec</p></div>
+        </div>
+        <div class="card row" style="gap:16px">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-dark">Dark</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-ghost">Ghost</button>
+          <span class="status is-good"><span class="dot is-good"></span>Good</span>
+          <span class="status is-warn"><span class="dot is-warn"></span>Missed</span>
+          <span class="status is-rec"><span class="dot is-rec"></span>Walkout</span>
+          <span class="status is-info"><span class="dot is-info"></span>Entered</span>
+          <div class="row" style="flex:1;min-width:180px;gap:10px"><div class="progress"><span style="width:72%"></span></div><span class="small mono muted">72%</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span class="row" style="gap:12px"><span class="logo" style="font-size:15px"><svg class="logo-mark" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10.25" stroke="currentColor" stroke-width="2.5"/><circle class="rec-fill" cx="12" cy="12" r="4"/></svg>sayso</span>© 2026</span>
+      <span class="mono" style="font-size:11px">Built for the Meta Global AI Developer Hackathon</span>
+    </div>
+  </footer>
+
+  <button class="btn btn-secondary btn-sm theme-toggle" id="themeBtn" type="button">Toggle dark</button>
+
+  <script>
+    // Fade-in on scroll
+    const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), { threshold: 0.15 });
+    document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+    // Badge playground (visual only in the preview)
+    const badge = document.getElementById('badge'), chip = document.getElementById('recChip'), simBtn = document.getElementById('simBtn');
+    let timer = null, secs = 0;
+    function toggleRec() {
+      const on = !badge.classList.contains('recording');
+      badge.classList.toggle('recording', on);
+      chip.hidden = !on;
+      simBtn.textContent = on ? 'Stop and get report' : 'Start recording';
+      clearInterval(timer); secs = 0;
+      if (on) timer = setInterval(() => { secs++; chip.lastChild.textContent = 'Recording · 00:' + String(secs).padStart(2, '0'); }, 1000);
+    }
+    simBtn.addEventListener('click', toggleRec);
+    document.getElementById('badgeBtn').addEventListener('click', toggleRec);
+
+    // Choice toggles
+    document.querySelectorAll('.choice').forEach(c => c.addEventListener('click', () => {
+      document.querySelectorAll('.choice').forEach(x => x.classList.toggle('selected', x === c));
+    }));
+
+    // Theme toggle (preview only)
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const r = document.documentElement;
+      const dark = r.dataset.theme === 'dark' || (!r.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+      r.dataset.theme = dark ? 'light' : 'dark';
+    });
+  </script>
+</body>
+</html>
