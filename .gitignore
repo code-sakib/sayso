@@ -1,0 +1,33 @@
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Other participants' Discord posts: private, never publish
+research/*.json
+research/competition-analysis.md
+
+# Recordings of real people stay local (privacy)
+recordings/
+*.wav
+*.mp3
+*.m4a
+*.mp4
+*.mov
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
+
+# PlatformIO / Arduino builds
+.pio/
+build/

@@ -1,0 +1,936 @@
+<title>SaySo Badge Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: workbench. The 3D stage fills the left; a parts ledger runs down the right. Stacks on phones. */
+:root {
+  --bg: #edf0f2;
+  --surface: #ffffff;
+  --surface-2: #f5f7f8;
+  --ink: #14181c;
+  --muted: #5a646e;
+  --line: #d2d9df;
+  --stage: #e1e6ea;
+  --grid-major: #b4bec7;
+  --grid-minor: #cfd6dc;
+  --accent: #cf2f29;
+  --accent-soft: rgba(207, 47, 41, 0.10);
+  --gold: #9c7220;
+  --f-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1114; --surface: #161a1f; --surface-2: #1b2026; --ink: #e6eaee; --muted: #93a0ab; --line: #2a3138;
+    --stage: #12161a; --grid-major: #34404b; --grid-minor: #222a31;
+    --accent: #ff5b50; --accent-soft: rgba(255, 91, 80, 0.14); --gold: #d6a84a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1114; --surface: #161a1f; --surface-2: #1b2026; --ink: #e6eaee; --muted: #93a0ab; --line: #2a3138;
+  --stage: #12161a; --grid-major: #34404b; --grid-minor: #222a31;
+  --accent: #ff5b50; --accent-soft: rgba(255, 91, 80, 0.14); --gold: #d6a84a;
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5; }
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding-block: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+h1 .rec-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 3px; }
+.sub { color: var(--muted); margin: 0; max-width: 62ch; }
+.specs { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.spec { font-family: var(--f-mono); font-size: 12px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 12px; min-height: 0; }
+
+.stage { position: relative; min-height: 0; border-radius: 14px; overflow: hidden; background: var(--stage); border: 1px solid var(--line); }
+.stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.overlay { position: absolute; display: flex; gap: 6px; flex-wrap: wrap; z-index: 2; }
+.views { top: 10px; left: 10px; right: 140px; }
+.recbox { top: 10px; right: 10px; }
+.dock { left: 10px; right: 10px; bottom: 10px; align-items: center; background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; gap: 10px 14px; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 10px; cursor: pointer;
+  font-size: 13px; font-weight: 500; transition: border-color .15s, background .15s;
+}
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--surface); }
+.recbtn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.recbtn .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--accent); }
+.recbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.recbtn[aria-pressed="true"] .dot { background: #fff; border-color: #fff; animation: blink 1s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+.dock label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.dock input[type=range] { flex: 1 1 160px; min-width: 120px; accent-color: var(--accent); }
+.dock .hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+.tag { position: absolute; z-index: 3; pointer-events: none; transform: translate(-50%, calc(-100% - 10px)); background: var(--ink); color: var(--surface); font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+.tag::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 8px; height: 8px; background: var(--ink); transform: translateX(-50%) rotate(45deg); }
+.tip { position: absolute; z-index: 4; pointer-events: none; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: 12px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+.fail { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+.panel { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 2px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+.info h2 { font-family: var(--f-display); font-size: 20px; font-weight: 600; margin: 0; line-height: 1.2; text-wrap: balance; }
+.info .dims { font-family: var(--f-mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+.info dl { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 8px 10px; margin: 12px 0 0; }
+.info dt { font-size: 12px; color: var(--muted); padding-top: 1px; }
+.info dd { margin: 0; min-width: 0; }
+.info .price { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.info .tipline { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); font-size: 13px; }
+.info .actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); margin-left: 6px; vertical-align: 2px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.stat { background: var(--surface-2); border-radius: 8px; padding: 8px; }
+.stat b { display: block; font-family: var(--f-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 11px; color: var(--muted); }
+
+.parts { display: grid; gap: 4px; }
+.part {
+  display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  text-align: left; padding: 7px 8px; border-radius: 8px; border: 1px solid transparent; background: transparent; cursor: pointer;
+}
+.part:hover { background: var(--surface-2); }
+.part[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.sw { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(0,0,0,.18); }
+.part .nm { font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+.part .dm { font-family: var(--f-mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.grp { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 8px 8px 2px; font-weight: 600; }
+.grp:first-child { margin-top: 0; }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 5px 10px; cursor: pointer; font-size: 13px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.row + .row { margin-top: 10px; }
+.check { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; margin-right: 5px; }
+
+.buy { display: grid; gap: 10px; }
+.buy h3 { font-size: 13px; margin: 0 0 2px; font-weight: 600; }
+.buy p { margin: 0; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 860px) {
+  html, body { height: auto; }
+  .app { height: auto; }
+  main { grid-template-columns: minmax(0, 1fr); }
+  .stage { height: 64vh; min-height: 400px; }
+  .panel { overflow: visible; }
+  .specs { margin-left: 0; }
+  .dock .hint { display: none; }
+  .views { right: 10px; top: 54px; }
+  .recbox { left: 10px; right: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .recbtn[aria-pressed="true"] .dot { animation: none; }
+}
+</style>
+
+<div class="app">
+  <header>
+    <h1><span class="rec-dot" aria-hidden="true"></span>SaySo Badge Lab</h1>
+    <p class="sub">The v1 badge, part by part. Drag to rotate, slide to pull it apart, tap any part to see what it does and where to buy it.</p>
+    <div class="specs" aria-label="Badge specs">
+      <span class="spec">Ø56 × 15 mm</span>
+      <span class="spec">11 parts</span>
+      <span class="spec">≈ ₹2,300–3,600</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage" id="stage" aria-label="3D badge viewer">
+      <div class="overlay views" role="group" aria-label="Camera views">
+        <button class="chip" data-view="angle" aria-pressed="true">Angle</button>
+        <button class="chip" data-view="front" aria-pressed="false">Front</button>
+        <button class="chip" data-view="back" aria-pressed="false">Back</button>
+        <button class="chip" data-view="side" aria-pressed="false">Side</button>
+        <button class="chip" data-view="shirt" aria-pressed="false">On a shirt</button>
+      </div>
+      <div class="overlay recbox">
+        <button class="chip recbtn" id="recBtn" aria-pressed="false"><span class="dot" aria-hidden="true"></span><span id="recText">Record</span></button>
+      </div>
+      <div class="overlay dock">
+        <label for="explode">Assembled</label>
+        <input type="range" id="explode" min="0" max="100" value="55" aria-label="Pull the badge apart">
+        <label for="explode">Exploded</label>
+        <span class="hint">Grid squares are 10 mm</span>
+      </div>
+      <div class="tag" id="tag" hidden></div>
+      <div class="tip" id="tip" hidden></div>
+    </section>
+
+    <aside class="panel">
+      <div class="card info" id="info" aria-live="polite"></div>
+
+      <div class="card">
+        <p class="eyebrow">Display</p>
+        <div class="row">
+          <span>Shell</span>
+          <div class="seg" role="group" aria-label="Shell display">
+            <button data-case="solid" aria-pressed="false">Solid</button>
+            <button data-case="glass" aria-pressed="true">See-through</button>
+            <button data-case="hidden" aria-pressed="false">Hidden</button>
+          </div>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="wires" checked> Show wires</label>
+        </div>
+        <div class="legend" aria-label="Wire colours">
+          <span><i style="background:#d33b32"></i>Battery +</span>
+          <span><i style="background:#2b2d31;outline:1px solid var(--muted)"></i>GND / BAT−</span>
+          <span><i style="background:#e0b032"></i>Button → D1</span>
+          <span><i style="background:#ee7a2a"></i>LED → D2</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Parts</p>
+        <div class="parts" id="parts"></div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Where each part comes from</p>
+        <div class="buy">
+          <div><h3>Robu.in, Pune (online)</h3><p>XIAO ESP32S3 Sense. The Sense board and microphone come with it.</p></div>
+          <div><h3>Lamington Road</h3><p>LiPo battery, 32 GB microSD, push buttons, 5 mm red LED, 220 Ω resistor, slide switch, perfboard, thin wire, soldering iron.</p></div>
+          <div><h3>Amazon.in</h3><p>Magnetic name-badge back (plate and magnet).</p></div>
+          <div><h3>3D-print shop</h3><p>Front shell and back cover, printed in matte PLA.</p></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const stage = document.getElementById('stage');
+  if (!window.THREE || !THREE.OrbitControls) {
+    const f = document.createElement('div');
+    f.className = 'fail';
+    f.textContent = 'The 3D viewer could not load. Check your connection and reload the page.';
+    stage.appendChild(f);
+    return;
+  }
+
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- Part data ----------
+  const PARTS = [
+    { id: 'case', name: 'Front shell', group: 'Enclosure', dims: 'Ø56 × 13.5 mm', swatch: '#e8e6e2', isCase: true, explode: [0, 0, 34],
+      does: 'The visible face of the badge. Holds every part and carries the SaySo logo.',
+      where: 'Front. A 1.5 mm mic hole sits at the top, the LED window on the right, slots for the button and power switch on the left edge, and the USB-C slot on the top edge.',
+      wiring: 'No wires. Parts inside are hot-glued or press-fit.',
+      buy: '3D-print shop, Mumbai', price: '₹300–600 with the back cover (approx.)',
+      tip: 'Print in matte PLA. Keep the mic hole small and directly over the mic, or the audio comes out muffled.' },
+    { id: 'sense', name: 'XIAO Sense board', group: 'Electronics', dims: '21 × 17.5 mm', swatch: '#2a2f36', explode: [0, 0, 16],
+      does: 'Clip-on board that ships with the XIAO ESP32S3 Sense. It carries the digital microphone and the microSD slot.',
+      where: 'Front of the board stack, with the mic facing the hole in the shell.',
+      wiring: 'Plugs onto the back of the XIAO through its built-in connector. No soldering.',
+      buy: 'Included with the XIAO ESP32S3 Sense', price: 'Included',
+      tip: 'The camera in the box plugs in here. Leave it unplugged: SaySo records audio only, which is also better for privacy.' },
+    { id: 'xiao', name: 'XIAO ESP32S3', group: 'Electronics', dims: '21 × 17.5 mm', swatch: '#1d2127', explode: [0, 0, 0],
+      does: 'The brain. It records from the mic, saves to the card, uploads over Wi-Fi and charges the battery from USB-C.',
+      where: 'Behind the Sense board. USB-C points out of the top edge for charging.',
+      wiring: 'Battery to the BAT+ and BAT− pads underneath. Button to D1 and GND. LED to D2 (through the resistor) and GND.',
+      buy: 'Robu.in, Pune (online)', price: '₹1,250–2,200 at Robu · ₹3,990 on Amazon',
+      tip: 'Solder the battery wires to the BAT pads before clipping the Sense board on. The Sense board covers them.' },
+    { id: 'sd', name: 'microSD card 32 GB', group: 'Electronics', dims: '15 × 11 mm', swatch: '#202226', explode: [0, -15, 24],
+      does: 'Stores recordings when Wi-Fi drops, so nothing is lost on the shop floor.',
+      where: 'In the slot on the Sense board.',
+      wiring: 'None. Push it in until it clicks.',
+      buy: 'Lamington Road', price: '~₹300',
+      tip: 'Format it as FAT32. The board reads cards up to 32 GB.' },
+    { id: 'battery', name: 'LiPo battery 500 mAh', group: 'Power', dims: '30 × 20 × 9 mm', swatch: '#c4c8cd', explode: [0, -18, -6],
+      does: 'Powers the badge. Roughly 4–5 hours of recording per charge (estimate, to be measured).',
+      where: 'Lower half of the shell, below the board stack.',
+      wiring: 'Red wire → power switch → BAT+. Black wire → BAT−.',
+      buy: 'Lamington Road or Robu.in', price: '~₹250',
+      tip: 'Check polarity before soldering: red is +. Tape any bare wire ends so they can never touch.' },
+    { id: 'button', name: 'Push button 6 × 6 mm', group: 'Controls', dims: '6 × 6 × 5 mm', swatch: '#2b2d31', explode: [-18, 0, 4],
+      does: 'Press once to start recording, press again to stop.',
+      where: 'Left edge. Its cap pokes through a slot in the shell wall.',
+      wiring: 'One leg to D1 (yellow wire), the other to GND. The board’s internal pull-up means no resistor is needed.',
+      buy: 'Lamington Road', price: '~₹20 for a pack of 10',
+      tip: 'Hot-glue the body to the inside of the wall so presses never push it loose.', action: 'record' },
+    { id: 'led', name: 'Red LED + 220 Ω resistor', group: 'Controls', dims: '5 mm LED on a 9 × 14 mm perfboard', swatch: '#d62a2a', explode: [16, 0, 10],
+      does: 'Glows while recording, so staff and customers always know. This is the privacy light.',
+      where: 'Right of the board stack, shining through the window in the front shell.',
+      wiring: 'D2 (orange wire) → 220 Ω resistor → LED long leg. LED short leg → GND.',
+      buy: 'Lamington Road', price: '~₹10 with the perfboard',
+      tip: 'Never connect the LED without the resistor, or it burns out.', action: 'record' },
+    { id: 'switch', name: 'Slide switch (power)', group: 'Power', dims: '8.6 × 3.6 mm', swatch: '#a9afb6', explode: [-18, -4, 0], optional: true,
+      does: 'Cuts the battery completely, so the badge does not drain overnight.',
+      where: 'Left edge, below the button.',
+      wiring: 'Sits in the battery’s red wire, between the battery and BAT+.',
+      buy: 'Lamington Road', price: '~₹10',
+      tip: 'Optional, but recommended. Without it the board is always powered.' },
+    { id: 'back', name: 'Back cover', group: 'Enclosure', dims: 'Ø55.6 × 1.5 mm', swatch: '#dcd9d4', isCase: true, explode: [0, 0, -22],
+      does: 'Closes the shell and carries the badge plate.',
+      where: 'Back, facing the shirt.',
+      wiring: 'None. Snaps or screws into the front shell.',
+      buy: '3D-print shop, Mumbai', price: 'Printed with the front shell',
+      tip: 'Leave about 0.2 mm clearance so it closes without force.' },
+    { id: 'plate', name: 'Badge plate', group: 'Mount', dims: '40 × 12 mm', swatch: '#9aa1a8', explode: [0, 0, -30],
+      does: 'Steel half of a magnetic name-badge back.',
+      where: 'Glued onto the back cover.',
+      wiring: 'None.',
+      buy: "Amazon.in (search 'magnetic name badge')", price: '₹100–200 per kit',
+      tip: 'Use the adhesive pad that comes with the kit, or super glue.' },
+    { id: 'magnet', name: 'Magnet', group: 'Mount', dims: '40 × 12 × 3 mm', swatch: '#4a4e54', explode: [0, 0, -42],
+      does: 'Goes inside the shirt and holds the badge through the fabric. No pins and no holes.',
+      where: 'Inside the shirt, behind the badge plate.',
+      wiring: 'None.',
+      buy: 'Same magnetic badge kit', price: 'Included',
+      tip: 'Holds well on a cotton shirt. A thick jacket may need a stronger magnet.' }
+  ];
+  const BY_ID = Object.fromEntries(PARTS.map(p => [p.id, p]));
+
+  // ---------- Scene ----------
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.insertBefore(renderer.domElement, stage.firstChild);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 1, 2000);
+  camera.position.set(95, 48, 140);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 45;
+  controls.maxDistance = 360;
+  controls.target.set(0, 0, 0);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a9099, 0.75));
+  const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(60, 90, 120); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffffff, 0.45); rim.position.set(-80, -20, -100); scene.add(rim);
+
+  // ---------- Helpers ----------
+  function M(color, o) {
+    o = o || {};
+    const m = new THREE.MeshStandardMaterial({ color, roughness: o.roughness ?? 0.6, metalness: o.metalness ?? 0, emissive: o.emissive ?? 0x000000, emissiveIntensity: o.emissiveIntensity ?? 1, map: o.map || null, side: o.side ?? THREE.FrontSide });
+    m.userData.base = o.opacity ?? 1;
+    m.opacity = m.userData.base;
+    m.transparent = m.userData.base < 1;
+    return m;
+  }
+  const METAL = () => M(0xb9bec4, { metalness: 0.75, roughness: 0.32 });
+  const GOLD = () => M(0xc9a24a, { metalness: 0.8, roughness: 0.3 });
+  const PCB = () => M(0x1c2026, { roughness: 0.55 });
+
+  function box(w, h, d, mat, x, y, z) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(x, y, z);
+    return m;
+  }
+  function cyl(r, len, axis, mat, x, y, z, seg) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, seg || 32), mat);
+    if (axis === 'z') m.rotation.x = Math.PI / 2;
+    if (axis === 'x') m.rotation.z = Math.PI / 2;
+    m.position.set(x, y, z);
+    return m;
+  }
+  function circleShape(r, cx, cy) {
+    const s = new THREE.Shape();
+    s.absarc(cx || 0, cy || 0, r, 0, Math.PI * 2, false);
+    return s;
+  }
+  function circleHole(r, cx, cy) {
+    const p = new THREE.Path();
+    p.absarc(cx, cy, r, 0, Math.PI * 2, true);
+    return p;
+  }
+  function roundRect(w, h, r, cx, cy) {
+    const s = new THREE.Shape();
+    const x = cx - w / 2, y = cy - h / 2;
+    s.moveTo(x + r, y);
+    s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
+    s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+    s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+    return s;
+  }
+  function extrude(shape, depth, mat, z) {
+    const m = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 64 }), mat);
+    m.position.z = z;
+    return m;
+  }
+  function textPlane(w, h, draw, x, y, z, flip) {
+    const c = document.createElement('canvas');
+    const scale = 16;
+    c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+    const g = c.getContext('2d');
+    draw(g, c.width, c.height);
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    tex.anisotropy = 4;
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
+    mat.userData.base = 1;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    m.position.set(x, y, z);
+    if (flip) m.rotation.y = Math.PI;
+    return m;
+  }
+  function textureFrom(size, draw, repeat) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    draw(c.getContext('2d'), size);
+    const t = new THREE.CanvasTexture(c);
+    t.encoding = THREE.sRGBEncoding;
+    if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, repeat); }
+    return t;
+  }
+
+  // ---------- Build parts (assembled positions, millimetres) ----------
+  // Axes: x right, y up, z toward the viewer. The front face is at z = 7.5, the back at z = -7.5.
+  const groups = {};
+  const root = new THREE.Group();
+  scene.add(root);
+  function part(id, build) {
+    const g = new THREE.Group();
+    g.userData.part = id;
+    build(g);
+    g.traverse(o => { if (o.isMesh) o.userData.part = id; });
+    groups[id] = g;
+    root.add(g);
+  }
+
+  const MIC = { x: 0, y: 17.2 };
+  const LEDP = { x: 16, y: 8 };
+
+  part('case', g => {
+    const caseMat = () => M(0xe8e6e2, { roughness: 0.85 });
+    const face = circleShape(28);
+    face.holes.push(circleHole(0.75, MIC.x, MIC.y), circleHole(2.65, LEDP.x, LEDP.y));
+    g.add(extrude(face, 2, caseMat(), 5.5));
+    const wall = circleShape(28);
+    wall.holes.push(circleHole(26, 0, 0));
+    g.add(extrude(wall, 11.5, caseMat(), -6));
+    const dark = () => M(0x0d0f12, { roughness: 1 });
+    g.add(box(10, 2.6, 4.2, dark(), 0, 27, -2.8));      // USB-C slot, top edge
+    g.add(box(2.6, 4.6, 4.6, dark(), -27, 8, -1));      // button slot, left edge
+    g.add(box(2.6, 2.4, 2.4, dark(), -27, -10, -1));    // switch slot, left edge
+    g.add(textPlane(26, 9, (c, w, h) => {
+      c.fillStyle = '#3a3f46';
+      c.font = '600 ' + Math.round(h * 0.62) + 'px "Chakra Petch", sans-serif';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('SaySo', w / 2, h / 2);
+    }, 0, -11, 7.56));
+    g.add(textPlane(10, 3, (c, w, h) => {
+      c.fillStyle = '#8b9097';
+      c.font = '500 ' + Math.round(h * 0.6) + 'px "IBM Plex Mono", monospace';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('REC', w / 2, h / 2);
+    }, LEDP.x, LEDP.y - 4.6, 7.56));
+  });
+
+  part('sense', g => {
+    g.add(box(17.5, 21, 1, PCB(), 0, 10, 1.5));
+    g.add(box(3.5, 2.7, 1, METAL(), MIC.x, MIC.y, 2.5));
+    g.add(cyl(0.45, 0.2, 'z', M(0x050505), MIC.x, MIC.y, 3.08, 16));
+    g.add(box(5, 2, 1.2, M(0xd8cfb8, { roughness: 0.7 }), 5.6, 19.4, 2.6));
+    g.add(box(12, 11, 1.5, METAL(), 0, 6.5, 2.75));
+    g.add(box(9, 4, 2, M(0x15171a), 0, 8, 0));
+    [[-6, 14], [-6.5, 2], [6.5, 14.5], [6.8, 1.6], [-4, 19.5]].forEach(([x, y]) => g.add(box(1.2, 0.7, 0.5, M(0x8a6e4b), x, y, 2.2)));
+  });
+
+  part('xiao', g => {
+    g.add(box(17.5, 21, 1, PCB(), 0, 10, -1.5));
+    g.add(box(12, 12, 2.2, METAL(), 0, 8, -3.1));
+    g.add(box(9, 7.4, 3.2, METAL(), 0, 18, -2.9));
+    const pinsY = [18.9, 16.4, 13.9, 11.3, 8.8, 6.3, 3.7];
+    pinsY.forEach(y => { g.add(box(1.1, 1.5, 1.06, GOLD(), -8.45, y, -1.5)); g.add(box(1.1, 1.5, 1.06, GOLD(), 8.45, y, -1.5)); });
+    g.add(box(2, 1.4, 0.1, GOLD(), 2.5, 1.3, -0.96));
+    g.add(box(2, 1.4, 0.1, GOLD(), -2.5, 1.3, -0.96));
+    g.add(box(2.5, 1.6, 0.8, M(0xdedede), -5, 1.6, -2.4));
+    g.add(box(2.5, 1.6, 0.8, M(0xdedede), 5, 1.6, -2.4));
+    g.add(cyl(0.9, 0.8, 'z', GOLD(), 6.2, 3.6, -2.4, 16));
+    g.add(box(1, 0.6, 0.4, M(0xff8a2a, { emissive: 0xff7a1a, emissiveIntensity: 0.4 }), -4.5, 15.6, -2.2));
+  });
+
+  part('sd', g => {
+    g.add(box(11, 15, 0.8, M(0x1d1f22, { roughness: 0.5 }), 0, 7.5, 2.75));
+    g.add(textPlane(9, 6, (c, w, h) => {
+      c.fillStyle = '#d9dde2';
+      c.font = '600 ' + Math.round(h * 0.38) + 'px "IBM Plex Sans", sans-serif';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('32 GB', w / 2, h * 0.42);
+      c.font = '500 ' + Math.round(h * 0.2) + 'px "IBM Plex Mono", monospace';
+      c.fillText('microSD', w / 2, h * 0.78);
+    }, 0, 10.5, 3.17));
+  });
+
+  part('battery', g => {
+    g.add(extrude(roundRect(30, 20, 2, 0, -10.5), 9, M(0xc4c8cd, { metalness: 0.35, roughness: 0.42 }), -5.8));
+    g.add(box(16, 2.4, 1.2, M(0xd9a032, { roughness: 0.5 }), 0, -1.9, 3.8));
+    g.add(textPlane(24, 11, (c, w, h) => {
+      c.fillStyle = '#2b3036';
+      c.font = '600 ' + Math.round(h * 0.2) + 'px "IBM Plex Sans", sans-serif';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('LiPo 3.7 V', w / 2, h * 0.3);
+      c.font = '500 ' + Math.round(h * 0.16) + 'px "IBM Plex Mono", monospace';
+      c.fillText('500 mAh · 902030', w / 2, h * 0.58);
+      c.fillStyle = '#c3302a';
+      c.fillText('+  red     −  black', w / 2, h * 0.82);
+    }, 0, -11.5, 3.22));
+  });
+
+  part('button', g => {
+    g.add(box(5, 6, 6, M(0x1f2023, { roughness: 0.5 }), -19.5, 8, -1));
+    g.add(box(0.6, 6.2, 6.2, METAL(), -22.2, 8, -1));
+    g.add(cyl(1.7, 3.5, 'x', M(0x2a2c30), -24.3, 8, -1));
+    g.add(cyl(2.1, 3, 'x', M(0x3b3f45, { roughness: 0.45 }), -26.9, 8, -1));
+    [[-17.4, 10.2], [-17.4, 5.8]].forEach(([x, y]) => g.add(box(1.4, 0.6, 0.6, METAL(), x, y, -1)));
+  });
+
+  part('led', g => {
+    const perfTex = textureFrom(128, (c, s) => {
+      c.fillStyle = '#b98a4f'; c.fillRect(0, 0, s, s);
+      c.fillStyle = '#3b2a17';
+      for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { c.beginPath(); c.arc(8 + i * 16, 8 + j * 16, 3, 0, Math.PI * 2); c.fill(); }
+    });
+    g.add(box(9, 14, 1.6, M(0xffffff, { map: perfTex, roughness: 0.8 }), 15.5, 7, -3.4));
+    const ledMat = M(0xd62a2a, { emissive: 0xff2a1f, emissiveIntensity: 0.12, roughness: 0.22, opacity: 0.94 });
+    ledMat.userData.isLed = true;
+    g.add(cyl(2.5, 6, 'z', ledMat, LEDP.x, LEDP.y, 1.5));
+    g.add(cyl(2.9, 0.8, 'z', ledMat, LEDP.x, LEDP.y, -1.1));
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(2.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), ledMat);
+    dome.rotation.x = Math.PI / 2;
+    dome.position.set(LEDP.x, LEDP.y, 4.5);
+    g.add(dome);
+    g.add(cyl(0.25, 1.1, 'z', METAL(), LEDP.x - 0.7, LEDP.y, -2.05, 8));
+    g.add(cyl(0.25, 1.1, 'z', METAL(), LEDP.x + 0.7, LEDP.y, -2.05, 8));
+    g.add(cyl(0.9, 6, 'x', M(0xd9c39a, { roughness: 0.7 }), 15.5, 2.2, -1.7));
+    [[-1.8, 0xc0392b], [-0.9, 0xc0392b], [0, 0x6b3e1f], [1.8, 0xc9a24a]].forEach(([dx, col]) => g.add(cyl(0.95, 0.5, 'x', M(col), 15.5 + dx, 2.2, -1.7, 16)));
+    g.add(cyl(0.2, 2, 'x', METAL(), 11.6, 2.2, -1.7, 8));
+    g.add(cyl(0.2, 2, 'x', METAL(), 19.4, 2.2, -1.7, 8));
+  });
+
+  part('switch', g => {
+    g.add(box(3.6, 8.6, 3.6, METAL(), -19.5, -10, -1));
+    g.add(box(6.6, 1.6, 1.6, M(0x18191b), -24.6, -10, -1));
+    [-12.5, -10, -7.5].forEach(y => g.add(box(1.6, 0.6, 0.5, METAL(), -16.9, y, -1)));
+  });
+
+  part('back', g => {
+    g.add(extrude(circleShape(27.8), 1.5, M(0xdcd9d4, { roughness: 0.85 }), -7.5));
+    g.add(textPlane(22, 8, (c, w, h) => {
+      c.fillStyle = '#7c8189';
+      c.font = '500 ' + Math.round(h * 0.26) + 'px "IBM Plex Mono", monospace';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('SaySo v1', w / 2, h * 0.32);
+      c.fillText('Ø56 · 15 mm', w / 2, h * 0.72);
+    }, 0, -15, -7.53, true));
+  });
+
+  part('plate', g => {
+    g.add(extrude(roundRect(40, 12, 3, 0, 4), 1.2, M(0x9aa1a8, { metalness: 0.7, roughness: 0.35 }), -8.7));
+  });
+
+  part('magnet', g => {
+    g.add(extrude(roundRect(40, 12, 3, 0, 4), 3, M(0x4a4e54, { metalness: 0.55, roughness: 0.4 }), -12.6));
+    g.add(textPlane(18, 4, (c, w, h) => {
+      c.fillStyle = '#c9ced4';
+      c.font = '600 ' + Math.round(h * 0.55) + 'px "IBM Plex Mono", monospace';
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('MAGNET', w / 2, h / 2);
+    }, 0, 4, -12.63, true));
+  });
+
+  // Shirt fabric, shown only in the "On a shirt" view
+  const fabricTex = textureFrom(256, (c, s) => {
+    c.fillStyle = '#4d6a8f'; c.fillRect(0, 0, s, s);
+    for (let i = 0; i < s; i += 4) {
+      c.fillStyle = i % 8 ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.10)';
+      c.fillRect(i, 0, 2, s); c.fillRect(0, i, s, 2);
+    }
+  }, 5);
+  const fabric = new THREE.Mesh(new THREE.PlaneGeometry(260, 260), new THREE.MeshStandardMaterial({ map: fabricTex, roughness: 0.95, side: THREE.DoubleSide }));
+  fabric.position.z = -9.1;
+  fabric.visible = false;
+  scene.add(fabric);
+
+  // Floor grid in 10 mm squares
+  let grid = null;
+  function buildGrid(major, minor) {
+    if (grid) { scene.remove(grid); grid.geometry.dispose(); grid.material.dispose(); }
+    grid = new THREE.GridHelper(260, 26, major, minor);
+    grid.position.y = -46;
+    scene.add(grid);
+  }
+
+  // ---------- Wires ----------
+  const WIRES = [
+    { color: 0xd33b32, a: ['battery', 4, -0.6, -1], b: ['switch', -17.7, -8, -1], bend: [-6, 2, -4.5], parts: ['battery', 'switch'] },
+    { color: 0xd33b32, a: ['switch', -17.7, -12, -1], b: ['xiao', 2.5, 1.3, -1.2], bend: [-6, -3, -5.2], parts: ['switch', 'xiao'] },
+    { color: 0x2b2d31, a: ['battery', -4, -0.6, -1], b: ['xiao', -2.5, 1.3, -1.2], bend: [-3, 0, -4.8], parts: ['battery', 'xiao'] },
+    { color: 0xe0b032, a: ['button', -17.4, 10.2, -1], b: ['xiao', -8.6, 16.4, -1.5], bend: [-13, 15, -4.5], parts: ['button', 'xiao'] },
+    { color: 0x2b2d31, a: ['button', -17.4, 5.8, -1], b: ['xiao', 8.6, 16.4, -1.5], bend: [0, 21, -5.4], parts: ['button', 'xiao'] },
+    { color: 0xee7a2a, a: ['xiao', -8.6, 13.9, -1.5], b: ['led', 11.6, 2.2, -1.7], bend: [2, 4, -5.4], parts: ['xiao', 'led'] },
+    { color: 0x2b2d31, a: ['led', 19.4, 2.2, -1.7], b: ['xiao', 8.6, 16.4, -1.5], bend: [14, 13, -5.2], parts: ['led', 'xiao'] }
+  ];
+  const wireGroup = new THREE.Group();
+  scene.add(wireGroup);
+  WIRES.forEach(w => {
+    w.mat = M(w.color, { roughness: 0.55 });
+    w.mesh = new THREE.Mesh(new THREE.BufferGeometry(), w.mat);
+    wireGroup.add(w.mesh);
+  });
+  function anchor(spec) {
+    const g = groups[spec[0]];
+    return new THREE.Vector3(spec[1], spec[2], spec[3]).add(g.position);
+  }
+  function rebuildWires() {
+    WIRES.forEach(w => {
+      const a = anchor(w.a), b = anchor(w.b);
+      const ctrl = new THREE.Vector3(w.bend[0], w.bend[1], w.bend[2]);
+      // Blend the bend point with any explode offset of the two ends so the wire stretches naturally
+      const off = groups[w.a[0]].position.clone().add(groups[w.b[0]].position).multiplyScalar(0.5);
+      ctrl.add(off);
+      const curve = new THREE.CatmullRomCurve3([a, a.clone().lerp(ctrl, 0.55), ctrl, b.clone().lerp(ctrl, 0.55), b]);
+      w.mesh.geometry.dispose();
+      w.mesh.geometry = new THREE.TubeGeometry(curve, 40, 0.35, 6, false);
+    });
+  }
+
+  // ---------- Recording rings + LED light ----------
+  const ledLight = new THREE.PointLight(0xff3326, 0, 45, 2);
+  scene.add(ledLight);
+  const rings = [0, 1, 2].map(i => {
+    const m = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.45, 48), new THREE.MeshBasicMaterial({ color: 0xff4a3d, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+    m.userData.phase = i / 3;
+    m.visible = false;
+    scene.add(m);
+    return m;
+  });
+
+  // ---------- State ----------
+  const state = { explode: 0.55, explodeTarget: 0.55, selected: null, caseMode: 'glass', wires: true, recording: false, recStart: 0, shirt: false, view: 'angle' };
+  const EXP_SCALE = 1;
+
+  function applyExplode(t) {
+    PARTS.forEach(p => {
+      const g = groups[p.id];
+      g.position.set(p.explode[0] * t * EXP_SCALE, p.explode[1] * t * EXP_SCALE, p.explode[2] * t * EXP_SCALE);
+    });
+    fabric.position.z = -9.1 + (-36 * t);
+    rebuildWires();
+  }
+
+  function setMatOpacity(mat, val) {
+    const v = (mat.userData.base ?? 1) * val;
+    const wasT = mat.transparent;
+    mat.opacity = v;
+    mat.transparent = v < 0.999;
+    mat.depthWrite = v > 0.6;
+    if (wasT !== mat.transparent) mat.needsUpdate = true;
+  }
+
+  function updateVisuals() {
+    const sel = state.selected;
+    PARTS.forEach(p => {
+      const g = groups[p.id];
+      let base = 1;
+      if (p.isCase) {
+        g.visible = state.caseMode !== 'hidden';
+        base = state.caseMode === 'glass' ? 0.22 : 1;
+        if (sel === p.id) base = Math.max(base, 0.85);
+      }
+      const focus = sel && sel !== p.id ? 0.14 : 1;
+      g.traverse(o => { if (o.isMesh) setMatOpacity(o.material, base * focus); });
+    });
+    wireGroup.visible = state.wires;
+    WIRES.forEach(w => setMatOpacity(w.mat, sel && !w.parts.includes(sel) ? 0.12 : 1));
+  }
+
+  // ---------- UI: parts list + info ----------
+  const partsEl = document.getElementById('parts');
+  let lastGroup = '';
+  PARTS.forEach(p => {
+    if (p.group !== lastGroup) {
+      const h = document.createElement('div');
+      h.className = 'grp'; h.textContent = p.group;
+      partsEl.appendChild(h);
+      lastGroup = p.group;
+    }
+    const b = document.createElement('button');
+    b.className = 'part';
+    b.dataset.id = p.id;
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<span class="sw"></span><span class="nm"></span><span class="dm"></span>';
+    b.querySelector('.sw').style.background = p.swatch;
+    b.querySelector('.nm').textContent = p.name + (p.optional ? ' · optional' : '');
+    b.querySelector('.dm').textContent = p.dims.split(' on ')[0];
+    b.addEventListener('click', () => select(state.selected === p.id ? null : p.id, true));
+    partsEl.appendChild(b);
+  });
+
+  const info = document.getElementById('info');
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function renderInfo() {
+    const p = state.selected && BY_ID[state.selected];
+    if (!p) {
+      info.innerHTML =
+        '<p class="eyebrow">Overview</p>' +
+        '<h2>SaySo badge v1</h2>' +
+        '<div class="dims">Round puck, worn on the chest like a staff name badge</div>' +
+        '<div class="stats">' +
+          '<div class="stat"><b>Ø56 mm</b><span>Width</span></div>' +
+          '<div class="stat"><b>15 mm</b><span>Thickness</span></div>' +
+          '<div class="stat"><b>~4–5 h</b><span>Battery (est.)</span></div>' +
+        '</div>' +
+        '<p class="tipline">Tap any part, here or in the 3D view, to see what it does, how it is wired and where to buy it. Press <b>Record</b> to see the privacy light and the mic in action.</p>';
+      return;
+    }
+    let actions = '';
+    if (p.action === 'record') actions = '<div class="actions"><button class="chip" id="infoRec">' + (state.recording ? 'Press to stop recording' : 'Press to start recording') + '</button></div>';
+    info.innerHTML =
+      '<p class="eyebrow">' + esc(p.group) + (p.optional ? '<span class="pill">Optional</span>' : '') + '</p>' +
+      '<h2>' + esc(p.name) + '</h2>' +
+      '<div class="dims">' + esc(p.dims) + '</div>' +
+      '<dl>' +
+        '<dt>Does</dt><dd>' + esc(p.does) + '</dd>' +
+        '<dt>Sits</dt><dd>' + esc(p.where) + '</dd>' +
+        '<dt>Wiring</dt><dd>' + esc(p.wiring) + '</dd>' +
+        '<dt>Buy</dt><dd>' + esc(p.buy) + '</dd>' +
+        '<dt>Price</dt><dd class="price">' + esc(p.price) + '</dd>' +
+      '</dl>' +
+      '<p class="tipline">' + esc(p.tip) + '</p>' + actions;
+    const r = document.getElementById('infoRec');
+    if (r) r.addEventListener('click', toggleRecording);
+  }
+
+  function select(id, fly) {
+    state.selected = id;
+    partsEl.querySelectorAll('.part').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+    updateVisuals();
+    renderInfo();
+    if (id && fly) flyToPart(id);
+  }
+
+  // ---------- Camera moves ----------
+  let tween = null;
+  function flyTo(pos, target) {
+    if (REDUCED) { camera.position.copy(pos); controls.target.copy(target); return; }
+    tween = { t: 0, fromP: camera.position.clone(), fromT: controls.target.clone(), toP: pos, toT: target };
+  }
+  function partCenter(id) {
+    return new THREE.Box3().setFromObject(groups[id]).getCenter(new THREE.Vector3());
+  }
+  function flyToPart(id) {
+    const c = partCenter(id);
+    const dir = camera.position.clone().sub(controls.target).normalize();
+    const dist = Math.max(70, Math.min(150, camera.position.distanceTo(controls.target) * 0.8));
+    flyTo(c.clone().add(dir.multiplyScalar(dist)), c);
+  }
+  const VIEWS = {
+    angle: [new THREE.Vector3(95, 48, 140), new THREE.Vector3(0, 0, 0)],
+    front: [new THREE.Vector3(0, 0, 150), new THREE.Vector3(0, 0, 0)],
+    back: [new THREE.Vector3(0, 0, -160), new THREE.Vector3(0, 0, -10)],
+    side: [new THREE.Vector3(160, 0, 0), new THREE.Vector3(0, 0, 0)],
+    shirt: [new THREE.Vector3(55, 30, 130), new THREE.Vector3(0, 0, 0)]
+  };
+  function setView(v) {
+    state.view = v;
+    document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+    state.shirt = v === 'shirt';
+    fabric.visible = state.shirt;
+    if (state.shirt) { setExplode(0); setCase('solid'); }
+    flyTo(VIEWS[v][0].clone(), VIEWS[v][1].clone());
+  }
+  document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+  // ---------- Controls ----------
+  const slider = document.getElementById('explode');
+  function setExplode(t) {
+    state.explodeTarget = t;
+    slider.value = Math.round(t * 100);
+    if (REDUCED) { state.explode = t; applyExplode(t); }
+  }
+  slider.addEventListener('input', () => {
+    state.explodeTarget = slider.value / 100;
+    state.explode = state.explodeTarget;
+    applyExplode(state.explode);
+  });
+
+  function setCase(mode) {
+    state.caseMode = mode;
+    document.querySelectorAll('[data-case]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.case === mode)));
+    updateVisuals();
+  }
+  document.querySelectorAll('[data-case]').forEach(b => b.addEventListener('click', () => setCase(b.dataset.case)));
+  document.getElementById('wires').addEventListener('change', e => { state.wires = e.target.checked; updateVisuals(); });
+
+  const recBtn = document.getElementById('recBtn');
+  const recText = document.getElementById('recText');
+  function toggleRecording() {
+    state.recording = !state.recording;
+    state.recStart = performance.now();
+    recBtn.setAttribute('aria-pressed', String(state.recording));
+    recText.textContent = state.recording ? 'REC 00:00' : 'Record';
+    rings.forEach(r => { r.visible = state.recording; });
+    renderInfo();
+  }
+  recBtn.addEventListener('click', toggleRecording);
+  setInterval(() => {
+    if (!state.recording) return;
+    const s = Math.floor((performance.now() - state.recStart) / 1000);
+    recText.textContent = 'REC ' + String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  }, 250);
+
+  // ---------- Picking ----------
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const tip = document.getElementById('tip');
+  const tag = document.getElementById('tag');
+  function pick(ev) {
+    const r = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
+    pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(root.children, true).filter(h => {
+      const p = BY_ID[h.object.userData.part];
+      if (!p) return false;
+      if (p.isCase && state.caseMode !== 'solid' && !(state.caseMode === 'glass' && state.selected === p.id)) return false;
+      if (!groups[p.id].visible) return false;
+      return true;
+    });
+    return hits.length ? hits[0].object.userData.part : null;
+  }
+  let downAt = null;
+  renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener('pointerup', e => {
+    if (!downAt) return;
+    const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
+    downAt = null;
+    if (moved > 5) return;
+    const id = pick(e);
+    select(id, !!id);
+  });
+  let hoverRaf = 0;
+  renderer.domElement.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse' || hoverRaf) return;
+    hoverRaf = requestAnimationFrame(() => {
+      hoverRaf = 0;
+      const id = pick(e);
+      if (!id) { tip.hidden = true; renderer.domElement.style.cursor = ''; return; }
+      const r = stage.getBoundingClientRect();
+      tip.textContent = BY_ID[id].name;
+      tip.style.left = (e.clientX - r.left + 14) + 'px';
+      tip.style.top = (e.clientY - r.top + 14) + 'px';
+      tip.hidden = false;
+      renderer.domElement.style.cursor = 'pointer';
+    });
+  });
+  renderer.domElement.addEventListener('pointerleave', () => { tip.hidden = true; });
+
+  // ---------- Theme ----------
+  function applyTheme() {
+    const cs = getComputedStyle(document.documentElement);
+    const get = n => cs.getPropertyValue(n).trim() || '#888888';
+    scene.background = new THREE.Color(get('--stage'));
+    buildGrid(new THREE.Color(get('--grid-major')), new THREE.Color(get('--grid-minor')));
+  }
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // ---------- Resize ----------
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage);
+
+  // ---------- Loop ----------
+  const tmp = new THREE.Vector3();
+  const micWorld = new THREE.Vector3();
+  const ledWorld = new THREE.Vector3();
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    if (Math.abs(state.explode - state.explodeTarget) > 0.001) {
+      state.explode += (state.explodeTarget - state.explode) * Math.min(1, dt * 7);
+      if (Math.abs(state.explode - state.explodeTarget) < 0.002) state.explode = state.explodeTarget;
+      applyExplode(state.explode);
+    }
+
+    if (tween) {
+      tween.t = Math.min(1, tween.t + dt / 0.7);
+      const k = tween.t < 0.5 ? 2 * tween.t * tween.t : 1 - Math.pow(-2 * tween.t + 2, 2) / 2;
+      camera.position.lerpVectors(tween.fromP, tween.toP, k);
+      controls.target.lerpVectors(tween.fromT, tween.toT, k);
+      if (tween.t >= 1) tween = null;
+    }
+    controls.update();
+
+    // LED glow and mic rings
+    ledWorld.set(LEDP.x, LEDP.y, 6).add(groups.led.position);
+    ledLight.position.copy(ledWorld);
+    const pulse = REDUCED ? 1 : 0.75 + 0.25 * Math.sin(now / 160);
+    groups.led.traverse(o => { if (o.isMesh && o.material.userData.isLed) o.material.emissiveIntensity = state.recording ? 1.6 * pulse : 0.12; });
+    ledLight.intensity = state.recording ? 2.2 * pulse : 0;
+    micWorld.set(MIC.x, MIC.y, 7.7).add(groups.case.position);
+    rings.forEach(r => {
+      if (!state.recording) return;
+      const ph = REDUCED ? 0.35 : ((now / 1600) + r.userData.phase) % 1;
+      r.position.copy(micWorld);
+      const s = 1 + ph * 7;
+      r.scale.set(s, s, s);
+      r.material.opacity = (1 - ph) * 0.7;
+    });
+
+    // Label on the selected part
+    if (state.selected) {
+      tmp.copy(partCenter(state.selected)).project(camera);
+      const visible = tmp.z < 1;
+      tag.hidden = !visible;
+      if (visible) {
+        tag.textContent = BY_ID[state.selected].name;
+        tag.style.left = ((tmp.x + 1) / 2 * stage.clientWidth) + 'px';
+        tag.style.top = ((1 - tmp.y) / 2 * stage.clientHeight) + 'px';
+      }
+    } else {
+      tag.hidden = true;
+    }
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+
+  applyTheme();
+  applyExplode(state.explode);
+  updateVisuals();
+  renderInfo();
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>

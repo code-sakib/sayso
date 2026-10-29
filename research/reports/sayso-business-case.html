@@ -1,0 +1,516 @@
+<title>SaySo Business Case</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of numbered "sheets", like a store's daily ledger; charts sit full column width */
+:root {
+  --bg: #f4f5f7; --surface: #ffffff; --ink: #15171c; --ink-2: #474c57; --muted: #767c88;
+  --line: #dde0e6; --accent: #d42f2a; --accent-soft: #fbe5e3;
+  --bar: #a3aab7; --bar-strong: #2a2e36;
+  --good: #1d7f47; --good-soft: #e1f2e8; --warn: #9a6512; --warn-soft: #f8eedb; --bad: #b8302a; --bad-soft: #f9e3e1;
+  --f-display: "Chakra Petch", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101216; --surface: #191c21; --ink: #eef0f3; --ink-2: #b6bbc5; --muted: #878d98;
+  --line: #2b2f37; --accent: #ff5d50; --accent-soft: #3a1c1a;
+  --bar: #4d5461; --bar-strong: #dfe3ea;
+  --good: #4cc983; --good-soft: #15291e; --warn: #e3aa45; --warn-soft: #2d2412; --bad: #ff7468; --bad-soft: #351b19;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #101216; --surface: #191c21; --ink: #eef0f3; --ink-2: #b6bbc5; --muted: #878d98;
+  --line: #2b2f37; --accent: #ff5d50; --accent-soft: #3a1c1a;
+  --bar: #4d5461; --bar-strong: #dfe3ea;
+  --good: #4cc983; --good-soft: #15291e; --warn: #e3aa45; --warn-soft: #2d2412; --bad: #ff7468; --bad-soft: #351b19;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 920px; margin: 0 auto; padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 23px; font-weight: 600; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; color: var(--ink-2); }
+.num, td, th, .mono { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--f-mono); }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.rec { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+header { display: grid; gap: 14px; }
+header p.lede { font-size: 17px; color: var(--ink-2); }
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.tile .k { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tile .v { font-family: var(--f-display); font-size: 26px; font-weight: 700; line-height: 1.1; }
+.tile .s { font-size: 13px; color: var(--ink-2); }
+
+section.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px clamp(16px, 3vw, 28px); display: grid; gap: 18px; min-width: 0; }
+.sheet-head { display: grid; gap: 6px; }
+.sheet-head .eyebrow b { color: var(--accent); font-weight: 500; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+th { text-align: left; font-family: var(--f-mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--bg); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+td strong { color: var(--ink); }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; white-space: nowrap; }
+tr.total td { color: var(--ink); font-weight: 600; background: var(--bg); }
+tr.hl td { background: var(--accent-soft); }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; font-family: var(--f-mono); font-size: 11.5px; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.pill.good { background: var(--good-soft); color: var(--good); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.neutral { background: var(--bg); color: var(--ink-2); border: 1px solid var(--line); }
+
+/* funnel */
+.funnel { display: grid; gap: 8px; }
+.fun-row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center; }
+.fun-bar { height: 46px; border-radius: 6px; display: flex; align-items: center; padding: 0 14px; justify-content: space-between; gap: 10px; margin: 0 auto; width: 100%; }
+.fun-row:nth-child(1) .fun-bar { background: var(--bg); border: 1px dashed var(--bar); }
+.fun-row:nth-child(2) .fun-bar { width: 70%; background: var(--bar); color: var(--ink); }
+.fun-row:nth-child(3) .fun-bar { width: 40%; background: var(--bar-strong); color: var(--surface); }
+.fun-bar b { font-family: var(--f-display); font-size: 18px; }
+.fun-bar span { font-size: 12.5px; white-space: nowrap; }
+.fun-label { font-family: var(--f-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.fun-label strong { display: block; color: var(--ink); font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-size: 14px; }
+.note { font-size: 13px; color: var(--muted); max-width: 72ch; }
+
+/* bar charts */
+.hbars { display: grid; gap: 10px; }
+.hb { display: grid; grid-template-columns: minmax(120px, 190px) 1fr 82px; gap: 12px; align-items: center; cursor: default; }
+.hb .lbl { font-size: 14px; color: var(--ink); }
+.hb .lbl small { display: block; color: var(--muted); font-size: 12px; }
+.hb .track { height: 22px; position: relative; }
+.hb .fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--bar); border-radius: 0 4px 4px 0; transition: opacity .15s; }
+.hb.lead .fill { background: var(--bar-strong); }
+.hb .val { text-align: right; font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.hb:hover .fill, .hb:focus-visible .fill { opacity: .78; }
+.hb:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* scenario range chart */
+.scen { display: grid; gap: 14px; }
+.sc { display: grid; gap: 4px; }
+.sc-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.sc-top .name { font-weight: 600; font-size: 14px; }
+.sc-top .amt { font-family: var(--f-mono); font-size: 13px; color: var(--ink-2); }
+.sc-track { position: relative; height: 18px; background: var(--bg); border-radius: 4px; }
+.sc-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 0 4px 4px 0; }
+.sc-fill.ok { background: var(--good); }
+.sc-fill.over { background: var(--bad); }
+.sc-range { position: absolute; top: 0; bottom: 0; opacity: .45; }
+.sc-range.ok { background: var(--good); }
+.sc-range.over { background: var(--bad); }
+.price-line { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--ink); }
+.scen-axis { position: relative; height: 18px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.scen-axis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.scen-axis span:first-child { transform: none; }
+.scen-axis span:last-child { transform: translateX(-100%); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+
+/* price build */
+.build { display: flex; flex-wrap: wrap; align-items: stretch; gap: 10px; }
+.chunk { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 2px; min-width: 120px; flex: 1 1 120px; }
+.chunk .v { font-family: var(--f-display); font-size: 22px; font-weight: 700; }
+.chunk .k { font-size: 12.5px; color: var(--muted); }
+.chunk.badge { border-style: dashed; }
+.chunk.sum { background: var(--bar-strong); color: var(--surface); border-color: var(--bar-strong); }
+.chunk.sum .k { color: var(--surface); opacity: .75; }
+.op { align-self: center; font-family: var(--f-display); font-size: 22px; color: var(--muted); }
+
+/* margin bars inside table */
+.mbar { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+.mbar .t { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; position: relative; overflow: hidden; }
+.mbar .t i { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+.mbar .t i.lo { background: var(--bad); }
+.mbar .t i.mid { background: var(--warn); }
+.mbar .t i.hi { background: var(--good); }
+.mbar span { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink); white-space: nowrap; width: 58px; text-align: right; }
+
+/* competitor map */
+.map { display: grid; grid-template-columns: 110px 1fr 1fr; gap: 8px; min-width: 560px; }
+.map .h { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); padding: 6px 4px; }
+.map .rowh { font-family: var(--f-mono); font-size: 12px; color: var(--ink-2); align-self: center; }
+.cell { background: var(--bg); border-radius: 8px; padding: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; min-height: 64px; }
+.co { font-size: 13px; padding: 4px 9px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+.co small { color: var(--muted); font-family: var(--f-mono); font-size: 11px; margin-left: 4px; }
+.co.threat { border: 1.5px solid var(--bad); }
+.bridge { grid-column: 2 / 4; border: 2px solid var(--accent); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--accent-soft); }
+.bridge b { font-family: var(--f-display); font-size: 16px; color: var(--ink); }
+.bridge span { font-size: 13.5px; color: var(--ink-2); }
+.scroll { overflow-x: auto; }
+
+/* timeline */
+.tl { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding-top: 22px; min-width: 560px; }
+.tl::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 2px; background: var(--line); }
+.tl .ev { position: relative; display: grid; gap: 3px; font-size: 13px; color: var(--ink-2); }
+.tl .ev::before { content: ""; position: absolute; top: -19px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--bar); }
+.tl .ev.now::before { border-color: var(--ink); background: var(--ink); }
+.tl .ev.key::before { border-color: var(--accent); background: var(--accent); }
+.tl .ev b { font-family: var(--f-mono); font-size: 12px; color: var(--ink); font-weight: 500; }
+
+/* payback */
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.phones { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.phone { width: 22px; height: 38px; border-radius: 5px; border: 2px solid var(--ink); position: relative; }
+.phone::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 6px; height: 2px; margin-left: -3px; background: var(--ink); border-radius: 1px; }
+.phone.part { border-style: dashed; border-color: var(--muted); }
+
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.split > * { min-width: 0; }
+ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); max-width: 70ch; }
+ol.steps strong { color: var(--ink); }
+.three { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.three .tile .v { font-size: 20px; }
+
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: var(--bg); font-size: 12.5px; padding: 7px 10px; border-radius: 6px; max-width: 260px; line-height: 1.4; }
+footer { font-size: 12.5px; color: var(--muted); display: grid; gap: 6px; }
+@media (max-width: 560px) {
+  .hb { grid-template-columns: 1fr 70px; }
+  .hb .track { grid-column: 1 / -1; grid-row: 2; }
+  .fun-row { grid-template-columns: 1fr; gap: 4px; }
+  .fun-row .fun-bar { width: 100% !important; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow"><span class="rec"></span>SaySo · market &amp; business · Oct 2026</div>
+  <h1>SaySo can earn 50% margins, and 80%+ once speech-to-text is in-house</h1>
+  <p class="lede">You were right that running costs are higher than they look. Almost all of the extra cost is speech-to-text, and engineering can bring it down. This page covers who buys SaySo, what one store costs to run, what to charge, and what could go wrong.</p>
+  <div class="verdict">
+    <div class="tile"><span class="k">Reachable stores</span><span class="v">12–20K</span><span class="s">High-ticket chains, not all 5 lakh stores</span></div>
+    <div class="tile"><span class="k">Cost to run 1 store</span><span class="v">₹8.5–9.2K</span><span class="s">per month · 5 badges, 2 cameras</span></div>
+    <div class="tile"><span class="k">Speech-to-text share</span><span class="v">~⅔</span><span class="s">of that cost: the line to attack</span></div>
+    <div class="tile"><span class="k">Suggested price</span><span class="v">₹19K</span><span class="s">₹4K store + ₹3K × 5 badges / month</span></div>
+  </div>
+  <p class="note">US$1 = ₹86. Costs are estimates built from published unit prices (Meta, Modal, LCSC, Jio and others). Full sources are in the markdown report.</p>
+</header>
+
+<section class="sheet" id="market">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>1</b> Market</div>
+    <h2>Your first market is about 15,000 stores, not 5 lakh</h2>
+    <p>SaySo only helps where the salesperson's words decide the sale: high price, long conversations, several staff. Self-service shops like Zudio don't fit.</p>
+  </div>
+  <div class="funnel" aria-label="Market funnel">
+    <div class="fun-row"><div class="fun-label">TAM<strong>All organized stores</strong></div><div class="fun-bar"><b>~5,00,000</b><span>mostly poor fit</span></div></div>
+    <div class="fun-row"><div class="fun-label">SAM<strong>High-ticket chains</strong></div><div class="fun-bar"><b>12–20K</b><span>₹274–456 cr/yr</span></div></div>
+    <div class="fun-row"><div class="fun-label">SOM<strong>Years 1–3</strong></div><div class="fun-bar"><b>300–1,000</b><span>₹6.8–22.8 cr/yr</span></div></div>
+  </div>
+  <p class="note">Bars are not to scale (5 lakh would be 30× wider than SAM). Revenue assumes ₹19,000 per store per month. Indian retail overall is about $952B (2024), heading to $1.6T by 2030.</p>
+  <h3>Which store type to sell to first</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Rank</th><th>Segment</th><th>Example chains (stores)</th><th>Why it fits</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><strong>1</strong></td><td><strong>Jewellery</strong></td><td>Titan 824 · Kalyan 524 (+150 planned) · CaratLane ~369</td><td>Biggest tickets, long advice-led sales, many staff</td></tr>
+      <tr class="hl"><td><strong>2</strong></td><td><strong>Electronics / Apple partners</strong></td><td>Reliance Digital ~1,100 · Croma 550+ · Aptronix 70</td><td>Avg phone ≈ ₹24,000; small Apple-partner chains decide fast</td></tr>
+      <tr><td>3</td><td>Eyewear</td><td>Lenskart ~2,067 · Titan Eye+ 840</td><td>Lower ticket, but standard processes and tech-friendly</td></tr>
+      <tr><td>4</td><td>Car / two-wheeler showrooms</td><td>Count not found</td><td>Huge ticket, but every dealer is a separate buyer</td></tr>
+      <tr><td>5</td><td>Premium apparel</td><td>Westside 301</td><td>Lower ticket per sale</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="sheet" id="competitors">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>2</b> Competitors</div>
+    <h2>Borentis already sells Hinglish in-store coaching</h2>
+    <p>No hackathon entrant builds SaySo, but the wider market has players. Audio tools and CCTV tools are separate companies. Nobody connects the two.</p>
+  </div>
+  <div class="scroll">
+    <div class="map">
+      <div></div><div class="h">Audio: what was said</div><div class="h">Video: who walked out</div>
+      <div class="rowh">India</div>
+      <div class="cell"><span class="co threat">Borentis<small>no price</small></span><span class="co">Convin<small>₹3.6–4.3K/user · calls only</small></span></div>
+      <div class="cell"><span class="co">Wobot<small>₹3.4K/store</small></span><span class="co">Agrex<small>₹0.8–1.2K/cam</small></span><span class="co">IndoAI<small>₹8–14K/store</small></span><span class="co">Staqu<small>no price</small></span></div>
+      <div class="rowh">Abroad</div>
+      <div class="cell"><span class="co">Rilla<small>$199–349/rep</small></span><span class="co">Siro<small>$149–249/rep</small></span><span class="co">tolqAI<small>₹6.8K/user</small></span><span class="co">Vera<small>no price</small></span></div>
+      <div class="cell"><span class="co">No one found joining video to sales talk</span></div>
+      <div class="rowh">SaySo</div>
+      <div class="bridge"><b>Audio + video together</b><span>Video shows which customer walked out; audio explains why.</span></div>
+    </div>
+  </div>
+  <div class="legend"><span><i style="border:1.5px solid var(--bad);background:var(--surface)"></i>Direct threat: same segments, Hinglish, says it is "video-ready"</span></div>
+  <p class="note">US prices of $150–350 per rep don't carry over to India. Usable Indian anchors: <strong>₹3,600–6,800 per salesperson</strong> for audio and <strong>₹3,400–14,000 per store</strong> for video.</p>
+</section>
+
+<section class="sheet" id="cost">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>3</b> Running cost</div>
+    <h2>Speech-to-text is two-thirds of the ₹8,800 store bill</h2>
+    <p>Typical store: 5 badges and 2 CCTV cameras. Each badge records 7 h/day for 26 days (182 h). Cutting silence leaves about 3 h of real speech a day (78 h/month).</p>
+  </div>
+  <div class="hbars" role="list" aria-label="Monthly cost per store by item">
+    <div class="hb lead" role="listitem" tabindex="0" data-tip="Meta Muse Voice Transcribe at $0.18 per audio-hour × 78 h × 5 badges"><div class="lbl">Speech-to-text<small>5 badges × 78 h</small></div><div class="track"><div class="fill" style="width:100%"></div></div><div class="val">₹6,025</div></div>
+    <div class="hb" role="listitem" tabindex="0" data-tip="Muse Spark at $1.25 / $4.25 per million tokens, ~22K tokens per hour"><div class="lbl">AI analysis<small>Muse Spark</small></div><div class="track"><div class="fill" style="width:18.7%"></div></div><div class="val">₹1,125</div></div>
+    <div class="hb" role="listitem" tabindex="0" data-tip="Jetson Orin Nano ($249 list, ₹30K+ in India) spread over 36 months"><div class="lbl">Video edge box<small>Jetson, in store</small></div><div class="track"><div class="fill" style="width:12.1%"></div></div><div class="val">₹600–860</div></div>
+    <div class="hb" role="listitem" tabindex="0" data-tip="₹2,150–3,450 per badge, spread over 24 months, × 5"><div class="lbl">Badge hardware<small>5 badges, 24 months</small></div><div class="track"><div class="fill" style="width:10.4%"></div></div><div class="val">₹625</div></div>
+    <div class="hb" role="listitem" tabindex="0" data-tip="Store Wi-Fi is free; a Jio data pack is ₹359 for 50 GB"><div class="lbl">Internet<small>if no store Wi-Fi</small></div><div class="track"><div class="fill" style="width:3.7%"></div></div><div class="val">₹0–450</div></div>
+    <div class="hb" role="listitem" tabindex="0" data-tip="6 months of audio at $0.015 per GB-month"><div class="lbl">Storage</div><div class="track"><div class="fill" style="width:1.1%"></div></div><div class="val">₹65</div></div>
+  </div>
+  <div class="split">
+    <div class="tbl"><table style="min-width:0">
+      <thead><tr><th>Per badge / month</th><th class="r">₹</th></tr></thead>
+      <tbody>
+        <tr><td>Speech-to-text (78 h)</td><td class="r">1,205</td></tr>
+        <tr><td>AI analysis</td><td class="r">225</td></tr>
+        <tr><td>Hardware (over 24 mo)</td><td class="r">125</td></tr>
+        <tr><td>Storage</td><td class="r">13</td></tr>
+        <tr class="total"><td>Total per badge</td><td class="r">≈ 1,570</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table style="min-width:0">
+      <thead><tr><th>Cash before first invoice</th><th class="r">₹</th></tr></thead>
+      <tbody>
+        <tr><td>5 badges</td><td class="r">10,750–17,250</td></tr>
+        <tr><td>Edge box (Indian retail price)</td><td class="r">21,400–30,000+</td></tr>
+        <tr class="total"><td>Per store, up front</td><td class="r">32–47K</td></tr>
+        <tr><td>100-store rollout</td><td class="r">32–47 lakh</td></tr>
+        <tr><td>Production case mould (one-time)</td><td class="r">6.9–12.9 lakh</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p class="note">Not included: charging docks, install visits, lost badges, support, security audits. The real figure will be somewhat higher. Indian buyers often pay in 60–120 days, so this cash is tied up for a while.</p>
+</section>
+
+<section class="sheet" id="scenarios">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>4</b> Setup choices</div>
+    <h2>Three choices decide whether you profit or lose money</h2>
+    <p>Monthly cost per store under different setups, against the ₹19,000 suggested price (black line).</p>
+  </div>
+  <div class="legend">
+    <span><i style="background:var(--good)"></i>Below price: profitable</span>
+    <span><i style="background:var(--bad)"></i>Near or above price: loses money</span>
+    <span><i style="background:var(--ink);width:3px"></i>Price ₹19,000</span>
+  </div>
+  <div class="scen" id="scenChart"></div>
+  <div class="scen-axis" id="scenAxis"></div>
+  <p class="note">The paler end of each bar is the range (low to high). "Lean" means running your own speech-to-text model on a rented GPU plus a cheaper analysis model.</p>
+</section>
+
+<section class="sheet" id="levers">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>5</b> Cost levers</div>
+    <h2>Five levers, ranked by how much they save</h2>
+    <p>Speech-to-text dominates, so the top levers cut either the hours transcribed or the price per hour.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Lever</th><th class="r">Saves / store / month</th><th>Catch</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><strong>1</strong></td><td><strong>Cut silence on the badge</strong> (VAD): transcribe 78 of 182 h</td><td class="r"><strong>~₹8,400</strong></td><td>Must catch quiet speech in a noisy store</td></tr>
+      <tr class="hl"><td><strong>2</strong></td><td><strong>Self-host speech-to-text</strong> (Omnilingual / Whisper on Modal L4, $0.80/h)</td><td class="r"><strong>~₹5,000–5,800</strong></td><td>Speaker separation + Hinglish accuracy still untested</td></tr>
+      <tr><td>3</td><td>Transcribe only customer conversations</td><td class="r">~₹2,000–2,400</td><td>Needs reliable "customer present" detection</td></tr>
+      <tr><td>4</td><td>Cheaper analysis model</td><td class="r">~₹1,000</td><td>Check coaching quality</td></tr>
+      <tr><td>5</td><td>Video on the edge box; SAM 3.1 only on walk-out clips</td><td class="r">avoids ~₹44,500</td><td>Needs compatible store CCTV recorders</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Avoid Meta's "contributor" pricing. It is about 10× cheaper but lets Meta train on the data, which clashes with DPDP rules and retailer contracts. On hardware, use a 1,000 mAh battery (500 mAh won't last a shift), record to SD and upload in batches.</p>
+</section>
+
+<section class="sheet" id="pricing">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>6</b> Pricing</div>
+    <h2>Charge per store plus per badge</h2>
+    <p>A flat store price loses money in big jewellery showrooms. A badge fee follows the main cost, so a 10-badge store pays for its own speech-to-text.</p>
+  </div>
+  <div class="build" aria-label="Price for a 5-badge store">
+    <div class="chunk"><span class="v">₹4,000</span><span class="k">Store fee: video, walk-out alerts</span></div>
+    <span class="op">+</span>
+    <div class="chunk badge"><span class="v">5 × ₹3,000</span><span class="k">Badge fee: recording, coaching</span></div>
+    <span class="op">=</span>
+    <div class="chunk sum"><span class="v">₹19,000</span><span class="k">per month, typical store</span></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Store type</th><th class="r">Badges</th><th class="r">Price / mo</th><th class="r">Cost / mo</th><th>Margin today</th><th>Margin, lean stack</th></tr></thead>
+    <tbody id="marginBody"></tbody>
+  </table></div>
+  <div class="split">
+    <div class="tbl"><table style="min-width:0">
+      <thead><tr><th>Other terms</th><th>Suggested</th></tr></thead>
+      <tbody>
+        <tr><td>Setup (install, dock, signage, training)</td><td><strong>₹10,000 / store</strong></td></tr>
+        <tr><td>Paid pilot</td><td><strong>50% off, 4–8 weeks, 3–10 stores</strong></td></tr>
+        <tr><td>Billing</td><td><strong>Annual, paid in advance</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table style="min-width:0">
+      <thead><tr><th>Market anchor</th><th class="r">₹ / month</th></tr></thead>
+      <tbody>
+        <tr><td>Wobot (per store)</td><td class="r">~3,400</td></tr>
+        <tr><td>IndoAI (per store)</td><td class="r">8,000–14,000</td></tr>
+        <tr><td>Convin (per user)</td><td class="r">3,600–4,300</td></tr>
+        <tr><td>tolqAI (per user)</td><td class="r">~6,800</td></tr>
+        <tr><td>Indian POS / CRM (per outlet)</td><td class="r">1,000–5,000</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="sheet" id="buyer">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>7</b> The buyer's view</div>
+    <h2>Sell extra sales, not saved hours</h2>
+    <p>₹19,000 is 25–32% of a 5-person store's frontline salary bill (associates earn ₹10–15K a month), so "saves time" won't sell. "Wins back walkouts" will.</p>
+  </div>
+  <div class="calc">
+    <div class="tile"><span class="k">SaySo bill</span><span class="v">₹19,000</span><span class="s">per month, 5 badges</span></div>
+    <div class="tile"><span class="k">Store margin per phone</span><span class="v">≈ ₹2,400</span><span class="s">10% of ₹24,000 avg phone (assumption)</span></div>
+    <div class="tile"><span class="k">Break-even</span><span class="v">≈ 8 phones</span><span class="s">extra sales a month, about 2 a week</span></div>
+  </div>
+  <div class="phones" aria-label="8 phones equals break-even">
+    <div class="phone"></div><div class="phone"></div><div class="phone"></div><div class="phone"></div><div class="phone"></div><div class="phone"></div><div class="phone"></div><div class="phone part"></div>
+    <span class="note" style="margin-left:6px">= one month of SaySo</span>
+  </div>
+  <p class="note">Jewellery clears the bar faster: one ring can pay for a month. Staff turnover in consumer durables is 66–71% a year, so classroom training keeps walking out the door. Always-on coaching stays.</p>
+</section>
+
+<section class="sheet" id="legal">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>8</b> Law (DPDP Act)</div>
+    <h2>Recording customers needs their consent</h2>
+    <p>The retailer is the "Data Fiduciary" (responsible). SaySo is its "Data Processor". Penalties go up to ₹250 crore for weak security.</p>
+  </div>
+  <div class="scroll"><div class="tl">
+    <div class="ev"><b>13 Nov 2025</b>DPDP Rules notified</div>
+    <div class="ev now"><b>Oct 2026 · now</b>Old SPDI Rules 2011 still apply</div>
+    <div class="ev"><b>Nov 2026</b>Hackathon; first pilots after</div>
+    <div class="ev key"><b>~13 May 2027</b>Core duties start: notice, consent, security, breach reports</div>
+  </div></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Who is recorded</th><th>Legal basis</th><th>What SaySo must do</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Staff</strong></td><td>Employment purpose (s.7(i))</td><td>HR policy; purpose is coaching, not punishment; never record break rooms</td></tr>
+      <tr class="hl"><td><strong>Customers (audio)</strong></td><td><strong>Consent</strong></td><td>Entry signage + a spoken line ("this chat may be recorded for training, okay?"); stop if they say no</td></tr>
+      <tr><td><strong>Customers (CCTV)</strong></td><td>Notice at entry</td><td>Sign with purpose, retention and QR link; blur faces; process on the in-store box</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Build it in from day one</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td>Visible recording</td><td>Red LED on, staff mute button</td></tr>
+      <tr><td>Keep little data</td><td>Delete raw audio 24–72 h after transcription; strip names, phone numbers, amounts</td></tr>
+      <tr><td>Video</td><td>Only events (walk-outs, wait times) leave the store</td></tr>
+      <tr><td>Security</td><td>Encryption, access control, access logs kept 1 year+</td></tr>
+      <tr><td>Breach</td><td>Tell the retailer within hours (they have 72 h to report)</td></tr>
+      <tr><td>Contract &amp; hosting</td><td>Data processing agreement; host in Mumbai region</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Open questions: whether a store sign counts as valid consent is untested in Indian courts, and voiceprints may need <em>written</em> consent under the old rules. Get an opinion from an Indian privacy lawyer before the first paid pilot.</p>
+</section>
+
+<section class="sheet" id="risks">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>9</b> Risks</div>
+    <h2>Six things that could break the business</h2>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>Level</th><th>What to do</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Customers refuse recording</strong> or signage ruled not enough</td><td><span class="pill bad">▲ High</span></td><td>Legal opinion; measure opt-out rate; keep video-only mode as fallback</td></tr>
+      <tr><td><strong>Cost guesses are wrong</strong> (3 h speech/day, Hinglish accuracy)</td><td><span class="pill bad">▲ High</span></td><td>Measure real speech-hours and accuracy in the first pilot before quoting</td></tr>
+      <tr><td><strong>Borentis, Rilla, Siro</strong></td><td><span class="pill warn">■ Med-high</span></td><td>Lead with audio + video walkout story; sign one anchor chain fast</td></tr>
+      <tr><td><strong>Slow sales, cash drain</strong> (3–9 month cycles, ₹32–47K hardware/store)</td><td><span class="pill warn">■ Med-high</span></td><td>Setup fee, annual prepay, start with small chains that decide fast</td></tr>
+      <tr><td><strong>ROI not proven</strong> (all uplift numbers are vendor claims)</td><td><span class="pill neutral">● Medium</span></td><td>Pilot with control stores; publish your own before/after</td></tr>
+      <tr><td><strong>Staff pushback, battery, Wi-Fi</strong></td><td><span class="pill neutral">● Medium</span></td><td>Frame as coaching with rewards; measure power before ordering a mould</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="sheet" id="next">
+  <div class="sheet-head">
+    <div class="eyebrow"><b>10</b> Next step</div>
+    <h2>A paid pilot settles this better than more research</h2>
+    <p>4–8 weeks in a small jewellery or Apple-partner chain, at 50% off. It should produce three numbers nobody has published:</p>
+  </div>
+  <div class="three">
+    <div class="tile"><span class="k">Number 1</span><span class="v">Speech-hours per badge</span><span class="s">Is it really ~3 h/day? This sets your cost.</span></div>
+    <div class="tile"><span class="k">Number 2</span><span class="v">Customer opt-out rate</span><span class="s">How many say no to recording?</span></div>
+    <div class="tile"><span class="k">Number 3</span><span class="v">Conversion change</span><span class="s">Pilot stores vs similar stores without SaySo</span></div>
+  </div>
+  <ol class="steps">
+    <li><strong>For the hackathon:</strong> show silence-cutting on the badge and say the cost number out loud. Judges like "₹1,570 per badge, falling to ₹400".</li>
+    <li><strong>Before selling:</strong> test Muse Voice Transcribe on a small Hinglish test set and report a score.</li>
+    <li><strong>Talk to 2–3 Mumbai store owners</strong> (Apple partner, jeweller) and ask what they'd pay. Write the answers down.</li>
+  </ol>
+</section>
+
+<footer>
+  <span>Sources: Meta API pricing, Modal, IBEF, Titan / Kalyan filings, company pricing pages, MediaNama, Mondaq and others. Every number is linked in <span class="mono">reports/SaySo retail market and costs.md</span>.</span>
+  <span>Lines marked as estimates are arithmetic on sourced unit prices, not published figures.</span>
+</footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(function () {
+  const PRICE = 19000;
+  const MAX = 55000;
+  const SCENARIOS = [
+    { name: "Lean stack", note: "own speech-to-text + cheap model", lo: 1850, hi: 3900 },
+    { name: "Default (recommended)", note: "silence cut, Meta API, edge video", lo: 8450, hi: 9150 },
+    { name: "No silence-cutting", note: "transcribe all 182 h per badge", lo: 16900, hi: 17600 },
+    { name: "Sarvam speech-to-text", note: "₹45/h with speaker separation", lo: 20000, hi: 20700 },
+    { name: "SAM 3.1 on every frame", note: "+ ~₹44,500 for 2 cameras", lo: 52950, hi: 53650 }
+  ];
+  const MARGINS = [
+    { type: "Eyewear", badges: 3, price: 13000, cost: "5,310–6,020", m: [54, 59], lean: [78, 90] },
+    { type: "Electronics", badges: 5, price: 19000, cost: "8,450–9,160", m: [52, 56], lean: [79, 90] },
+    { type: "Jewellery showroom", badges: 10, price: 34000, cost: "16,300–17,010", m: [50, 52], lean: [81, 91] },
+    { type: "Pilot (50% off)", badges: 5, price: 9500, cost: "8,450–9,160", m: [4, 11], lean: [59, 81] },
+    { type: "No silence-cutting", badges: 5, price: 19000, cost: "16,900–17,600", m: [7, 11], lean: null }
+  ];
+  const fmt = n => "₹" + n.toLocaleString("en-IN");
+  const pct = n => (n / MAX * 100).toFixed(2) + "%";
+
+  const chart = document.getElementById("scenChart");
+  chart.innerHTML = SCENARIOS.map(s => {
+    // within 10% of the price counts as losing money once support and install are added
+    const cls = s.hi < PRICE * 0.9 ? "ok" : "over";
+    const status = cls === "ok" ? "Profitable at ₹19K" : (s.lo > PRICE ? "Costs more than the price" : "Margin under 11%");
+    return `<div class="sc" tabindex="0" data-tip="${s.name}: ${fmt(s.lo)}–${fmt(s.hi)} per store per month. ${status}.">
+      <div class="sc-top"><span class="name">${s.name} <span class="note">· ${s.note}</span></span><span class="amt">${fmt(s.lo)}–${fmt(s.hi)}</span></div>
+      <div class="sc-track"><div class="sc-fill ${cls}" style="width:${pct(s.lo)}"></div><div class="sc-range ${cls}" style="left:${pct(s.lo)};width:${pct(s.hi - s.lo)}"></div><div class="price-line" style="left:${pct(PRICE)}"></div></div>
+    </div>`;
+  }).join("");
+  document.getElementById("scenAxis").innerHTML = [0, 10000, 20000, 30000, 40000, 55000]
+    .map(v => `<span style="left:${pct(v)}">${v === 0 ? "₹0" : "₹" + v / 1000 + "K"}</span>`).join("");
+
+  const band = m => m[1] < 30 ? "lo" : m[1] < 70 ? "mid" : "hi";
+  const mbar = m => m ? `<div class="mbar"><div class="t"><i class="${band(m)}" style="left:0;width:${m[1]}%"></i></div><span>${m[0]}–${m[1]}%</span></div>` : `<span class="note">n/a</span>`;
+  document.getElementById("marginBody").innerHTML = MARGINS.map(r =>
+    `<tr${r.type === "Electronics" ? ' class="hl"' : ""}><td><strong>${r.type}</strong></td><td class="r">${r.badges}</td><td class="r">${fmt(r.price)}</td><td class="r">₹${r.cost}</td><td>${mbar(r.m)}</td><td>${mbar(r.lean)}</td></tr>`
+  ).join("");
+
+  const tip = document.getElementById("tip");
+  const show = (el, x, y) => {
+    tip.textContent = el.dataset.tip;
+    tip.hidden = false;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.min(x + 14, window.innerWidth - w - 8) + "px";
+    tip.style.top = Math.max(8, y - h - 12) + "px";
+  };
+  document.addEventListener("mousemove", e => {
+    const el = e.target.closest("[data-tip]");
+    if (el) show(el, e.clientX, e.clientY); else tip.hidden = true;
+  });
+  document.addEventListener("focusin", e => {
+    const el = e.target.closest("[data-tip]");
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    show(el, r.left + 20, r.top);
+  });
+  document.addEventListener("focusout", () => { tip.hidden = true; });
+})();
+</script>
