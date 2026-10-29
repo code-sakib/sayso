@@ -287,9 +287,66 @@ The retailer is the **Data Fiduciary** (responsible). SaySo is the **Data Proces
 | Theme | Build for Your World (Stage 1 is only a pass/fail theme check) |
 | Submission | **4 Nov 2026, 9:00 PM ET** |
 | Live finals | 9 Nov 2026 |
-| Rubric | Impact 30% · Use of Meta AI 25% · Technical depth 20% · Demo 25% |
+| Rubric | Impact 30% · Use of Meta AI 25% · Technical depth 20% · Demo 25% (each scored 0–10; same rubric in Stage 2 and finals) |
+| What judges look at | The **3-minute video** (finals judge only this), the **public GitHub repo**, the submission form. No website is required |
 | Avoid | "Dashboard as main feature" (banned list), so the output is a coaching report |
 | Credits | Meta API (INR billing, spend alerts are email-only) · Modal ($30 cap) · Baseten / Fireworks forms |
+
+### Rubric → what SaySo shows
+
+| Criterion | What it asks | How SaySo answers it |
+|---|---|---|
+| **Impact (30%)** | Real-world potential, who benefits, fit with the problem statement | Walkout story, store owner quote, market numbers |
+| **Use of Meta AI (25%)** | Creative use beyond a basic integration | Four models working together: SAM Audio removes customer voices, SAM 3.1 catches the walkout, Transcribe, then Spark links them by time |
+| **Technical depth (20%)** | Sound, refined engineering with real craft | Custom badge + firmware + audio/video sync pipeline + clean repo |
+| **Demo (25%)** | A working demo that holds up, and a video worth watching | Real badge in a real store, plus a live website judges can try |
+
+### Final scope (decided 30 Oct 2026)
+
+| Part | What it is | Who it is for |
+|---|---|---|
+| **1. Badge in the video** | Real badge, real store, mock sale, walkout, coaching note | Judges watching the 3-minute video |
+| **2. Live website: upload → report** | Owner uploads audio + store video and gets the coaching report | Judges who want to try it |
+| **3. Badge playground** | On-screen badge: press the button, red light on, laptop/phone mic records like the badge, then a report | Judges without the hardware |
+
+All three run on **one pipeline**: SAM Audio → Muse Voice Transcribe → SAM 3.1 → Muse Spark.
+
+```
+Badge (Wi-Fi upload) ──┐
+Website upload ────────┼──► SaySo pipeline ──► coaching report page
+Playground (mic) ──────┘
+```
+
+Website rules:
+- **"Try a sample" button**: one click shows a full report from a pre-run example. Instant, free, never breaks.
+- **Short limits**: audio up to 2 minutes, video up to 30 seconds (SAM 3.1 bills per frame).
+- **API key stays on the server**; a few tries per visitor.
+- Three things only: upload, playground, report page. Not a dashboard.
+
+### Priority (if time runs short, cut from the bottom)
+
+| # | Piece | Status |
+|---|---|---|
+| 1 | Pipeline works: audio + video → report | Must have |
+| 2 | Badge working + real store footage | Must have |
+| 3 | 3-minute demo video | Must have |
+| 4 | Live website: upload + sample | Strongly recommended |
+| 5 | Badge playground | Nice to have; cut first |
+
+### Build timeline
+
+| Date | Build |
+|---|---|
+| 30–31 Oct | Pipeline: transcription → coaching note (test with phone recordings) |
+| 31 Oct–1 Nov | SAM 3.1 video events + website with sample and upload |
+| 1–2 Nov | Badge firmware + Wi-Fi upload (parts arrive ~1–2 Nov) |
+| 2–3 Nov | Real store recording, playground, demo video |
+| 4 Nov | README polish, submit (before 6:30 AM IST on 5 Nov) |
+
+### Testing in real stores
+- Staff wear the badge with the owner's and staff's written OK; a sign at the counter.
+- Staff-only mode removes customer voices; never record customers secretly.
+- Stage one walkout with a friend as the customer; store CCTV only with the owner's permission; never show real customers' faces.
 
 ### Demo script (~2 min)
 1. **Story (15 s):** the iPlanet walkout.
@@ -310,8 +367,12 @@ The retailer is the **Data Fiduciary** (responsible). SaySo is the **Data Proces
 ## 12. Next steps
 
 ### This week (hackathon)
-- [ ] Order parts: XIAO ESP32S3 Sense from Pune; the rest from Lamington Road.
+- [x] Order parts from Hubtronics, Pune (₹2,833.92, 28 Oct). Confirm the order with them: payment went through but the order page was lost.
+- [x] Public GitHub repo: github.com/code-sakib/sayso
+- [ ] Set `MODEL_API_KEY` on the Mac.
 - [ ] Firmware: button start/stop, LED, record to SD, Wi-Fi upload.
+- [ ] Website: "Try a sample", upload → report, badge playground.
+- [ ] First X post (walkout story + 3D badge clip); Reddit post to Mumbai store owners.
 - [ ] Loudness gate on the badge (staff-only filter, step 1).
 - [ ] Pipeline: upload → SAM Audio (isolate wearer) → Muse Voice Transcribe → Muse Spark report.
 - [ ] SAM 3.1 on a short phone video of a mock store (walkout + wait).
