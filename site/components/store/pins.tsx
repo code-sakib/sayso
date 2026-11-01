@@ -14,10 +14,11 @@ import { activeId, useSelection } from "./selection";
 
 type Dot = "rec" | "info" | "idle" | "good" | "warn";
 
-type PinSpec = { id: string; text: string; dot?: Dot; kind: "section" | "staff" | "branch" };
+type PinSpec = { id: string; text: string; dot?: Dot; kind: "section" | "staff" | "branch" | "cctv" };
 
 const PINS: PinSpec[] = [
   ...BRANCHES.map((b): PinSpec => ({ id: `branch-${b.id}`, text: `${b.street} · ${b.kind}`, kind: "branch" })),
+  ...BRANCHES.map((b): PinSpec => ({ id: `cctv-${b.id}`, text: "CCTV", dot: "rec", kind: "cctv" })),
   ...BRANCHES.filter((b) => b.kind === "Electronics").flatMap((b) =>
     SECTIONS.map((s): PinSpec => ({ id: `${b.id}-section-${s.id}`, text: s.label, kind: "section" })),
   ),
@@ -33,6 +34,12 @@ const PINS: PinSpec[] = [
 const labels = new Map<string, HTMLDivElement>();
 const anchors = new Map<string, Object3D>();
 const scratch = new Vector3();
+
+/** Ref callback that lets any DOM element follow an anchor of the same id (see PinUpdater). */
+export const followAnchor = (id: string) => (el: HTMLElement | null) => {
+  if (el) labels.set(id, el as HTMLDivElement);
+  else labels.delete(id);
+};
 
 /** Marks a 3D point for a label. Positions are updated by <PinUpdater />. */
 export function PinAnchor({ id, y = 0 }: { id: string; y?: number }) {
@@ -80,10 +87,7 @@ export function PinLayer() {
             key={p.id}
             className={`tag3d is-${p.kind}${isActive ? " is-active" : ""}`}
             data-pin={p.id}
-            ref={(el) => {
-              if (el) labels.set(p.id, el);
-              else labels.delete(p.id);
-            }}
+            ref={followAnchor(p.id)}
           >
             {p.dot && <span className={`dot is-${p.dot}${p.dot === "rec" ? " live" : ""}`} />}
             {p.text}

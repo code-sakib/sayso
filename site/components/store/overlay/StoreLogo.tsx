@@ -17,7 +17,7 @@ const MARKS: Record<Branch["kind"], React.ReactNode> = {
   ),
 };
 
-export function StoreLogo({ branch, size = 34 }: { branch: Branch; size?: number }) {
+export function StoreLogo({ branch, size = 34 }: { branch: Pick<Branch, "kind" | "accent">; size?: number }) {
   return (
     <span className="store-logo" style={{ background: branch.accent, width: size, height: size }} aria-hidden="true">
       <svg viewBox="0 0 24 24" width={size * 0.55} height={size * 0.55} fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

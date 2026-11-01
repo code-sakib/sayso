@@ -12,10 +12,12 @@ import { CameraRig, HOME_CAMERA, STORE_FOV } from "./CameraRig";
 import { C } from "./palette";
 import { pin } from "./selection";
 import { PinUpdater } from "./pins";
+import { townTime } from "./townClock";
 
 const SHADOW_SPAN = 100;
 
-function Lights() {
+/** The store's lighting; the town backdrops share it so both views match. */
+export function Lights() {
   return (
     <>
       <hemisphereLight args={["#FFFFFF", "#CFC8BA", 0.68]} />
@@ -61,7 +63,7 @@ export default function StoreCanvas({ active, still, interactive }: { active: bo
       <Lights />
       <City />
       {BRANCHES.map((b) => <Branch key={b.id} branch={b} />)}
-      {PASSERS.map((w) => <Person key={w.id} walker={w} />)}
+      {PASSERS.map((w) => <Person key={w.id} walker={w} time={townTime} />)}
       <PinUpdater />
     </Canvas>
   );

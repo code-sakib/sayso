@@ -8,6 +8,7 @@ import { Fixtures as ElectronicsFixtures } from "./electronics/fixtures";
 import { electronicsPeople } from "./electronics/crowd";
 import { FashionFixtures } from "./fashion/Fixtures";
 import { FASHION_PEOPLE } from "./fashion/crowd";
+import { CaseCustomer } from "./cases/CaseCustomer";
 
 const PEOPLE: Record<BranchId, Walker[]> = {
   electronics: electronicsPeople("electronics", { mobiles: "jake", tv: "priya", laptops: "marcus", appliances: "emily", cashier: "daniel" }, 0),
@@ -22,6 +23,7 @@ export function Branch({ branch }: { branch: BranchData }) {
       <Building branch={branch} />
       {branch.kind === "Clothing" ? <FashionFixtures /> : <ElectronicsFixtures branchId={branch.id} />}
       {PEOPLE[branch.id].map((w) => <Person key={w.id} walker={w} />)}
+      <CaseCustomer branchId={branch.id} />
     </group>
   );
 }

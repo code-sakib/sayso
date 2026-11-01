@@ -123,7 +123,7 @@ function Front({ branch, withLabel }: { branch: Branch; withLabel: boolean }) {
 }
 
 /** Ceiling CCTV camera that slowly pans across the floor. */
-function Cctv() {
+function Cctv({ branchId, withLabel }: { branchId: string; withLabel: boolean }) {
   const head = useRef<Group>(null);
   useFrame(({ clock }) => {
     if (head.current) head.current.rotation.y = Math.PI / 4 + Math.sin(clock.elapsedTime * 0.35) * 0.55;
@@ -135,6 +135,7 @@ function Cctv() {
       <group ref={head}>
         <group rotation={[0.45, 0, 0]}>
           <Block size={[0.32, 0.3, 0.62]} position={[0, 0, 0.25]} color="#F8FAFC" radius={0.08} />
+          {withLabel && <group position={[0, 0.5, 0.25]}><PinAnchor id={`cctv-${branchId}`} /></group>}
           <mesh position={[0.1, 0.09, 0.57]}>
             <sphereGeometry args={[0.03, 10, 10]} />
             <meshStandardMaterial color={C.rec} emissive={C.rec} emissiveIntensity={2} />
@@ -172,7 +173,7 @@ export function Building({ branch, withLabel = true }: { branch: Branch; withLab
       <Floor branch={branch} />
       <Walls accent={branch.accent} />
       <Front branch={branch} withLabel={withLabel} />
-      <Cctv />
+      <Cctv branchId={branch.id} withLabel={withLabel} />
       <Plant position={[halfW - 0.7, 0, halfD - 0.7]} />
       <Plant position={[-halfW + 0.7, 0, halfD - 0.7]} />
       <Plant position={[halfW - 0.7, 0, -halfD + 1.5]} />
