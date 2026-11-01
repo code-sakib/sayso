@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test components/**/*.test.ts"
+    "test": "node --experimental-strip-types --test $(find components engine -name \"*.test.ts\")",
+    "seed:badges": "node --experimental-strip-types scripts/seed-badges.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -15,7 +16,8 @@
     "next": "^15.5.28",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "three": "^0.171.0"
+    "three": "^0.171.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

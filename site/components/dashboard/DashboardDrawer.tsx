@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { StoreLogo } from "../store/overlay/StoreLogo";
 import { BadgeIcon, CalendarIcon, CloseIcon, HomeIcon, SettingsIcon, TeamIcon } from "../Icons";
+import { branchById } from "../store/branches";
 import { weekFor } from "./reports";
 import { weekTotals } from "./reports/week";
 import { useOwner } from "./stores/ownerStores";
@@ -65,6 +66,11 @@ export function DashboardDrawer({ storeId, isOpen, onClose }: { storeId: string;
         })}
         {link("/dashboard/settings", "Settings", <SettingsIcon />)}
       </nav>
+      {branchById(storeId) && (
+        <Link href={`${reportsHref}/log`} className="btn btn-primary dash-log-btn">
+          + Log today&apos;s entry
+        </Link>
+      )}
       <div className="dash-drawer-rule" />
       <nav className="dash-links" aria-label="Website">
         {link("/", "Back to the website", <HomeIcon />)}

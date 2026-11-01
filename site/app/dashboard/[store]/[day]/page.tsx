@@ -1,25 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BRANCHES, branchById } from "@/components/store/branches";
-import { WEEKS, reportFor, weekFor } from "@/components/dashboard/reports";
+import { branchById } from "@/components/store/branches";
+import { reportFor, weekFor } from "@/components/dashboard/reports";
 import { dayLabel, neighbours } from "@/components/dashboard/reports/week";
 import { StatTiles } from "@/components/dashboard/StatTiles";
 import { MomentCard } from "@/components/dashboard/MomentCard";
 import { DisputeCard } from "@/components/dashboard/DisputeCard";
 import { RepNotes } from "@/components/dashboard/RepNotes";
 import { ArrowLeft } from "@/components/Icons";
+import { mergeDays, savedReport, savedReports } from "@/engine/storage/reports";
 
-export const generateStaticParams = () =>
-  BRANCHES.flatMap((b) => WEEKS[b.id].map((d) => ({ store: b.id, day: d.date })));
+// Reports written by the engine appear without a rebuild
+export const dynamic = "force-dynamic";
 
 /** One day's report for one store. */
 export default async function DayReportPage({ params }: { params: Promise<{ store: string; day: string }> }) {
   const { store, day } = await params;
   const branch = branchById(store);
-  const report = reportFor(store, day);
+  const report = (await savedReport(store, day)) ?? reportFor(store, day);
   if (!branch || !report) notFound();
   const { weekday, short } = dayLabel(report.date);
-  const { older, newer } = neighbours(weekFor(store) ?? [], report.date);
+  const { older, newer } = neighbours(mergeDays(weekFor(store) ?? [], await savedReports(store)), report.date);
   return (
     <div className="dash-page">
       <Link href={`/dashboard/${store}`} className="dash-back"><ArrowLeft /> This week</Link>
