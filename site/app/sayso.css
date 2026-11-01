@@ -166,8 +166,9 @@ p { margin: 0; }
   letter-spacing: -0.02em;
 }
 .logo-mark { width: 22px; height: 22px; }
-/* Brand not shown for now: every logo is blurred out (nav and footer) */
-.logo { filter: blur(6px); user-select: none; }
+/* Not shown for now: the logo (nav and footer) and the "Try the badge" link are blurred out */
+.logo, .is-hidden-for-now { filter: blur(6px); user-select: none; }
+.is-hidden-for-now { pointer-events: none; }
 .logo-mark .rec-fill { fill: var(--rec); }
 
 /* ─── Buttons ─── */

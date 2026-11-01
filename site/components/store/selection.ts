@@ -19,7 +19,9 @@ export const CAMERA_VIEW = {
 export type CameraCommand =
   | { kind: "zoom"; factor: number }
   | { kind: "home" }
-  | { kind: "branch"; id: string };
+  | { kind: "branch"; id: string }
+  /** Fly close to a point inside a branch (local x, z), e.g. a demo conversation. */
+  | { kind: "spot"; branch: string; x: number; z: number };
 
 type State = {
   hovered: string | null;

@@ -10,6 +10,7 @@ import type { Look } from "./look";
 import { C } from "./palette";
 import { PinAnchor } from "./pins";
 import { activeId, getSelection, hover, pin } from "./selection";
+import { keepOut, stageFor, stepToward, talkZone, type Step } from "./cases/staging";
 
 const STRIDE = 7.5; // leg swings per second while walking
 const LEG_SWING = 0.55;
@@ -18,6 +19,8 @@ const TURN_RATE = 8;
 const LED_BLINK = 1.6; // seconds per blink
 const ROUGH = 0.7;
 const FADE_SECONDS = 0.8; // shoppers grow in and shrink out at the ends of their route
+const STAGE_SPEED = 1.6; // metres per second when a rep walks to a demo conversation
+const CATCH_UP_SPEED = 2.4; // and back to their usual route afterwards
 
 /** Shortest signed angle from a to b. */
 const angleDelta = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
@@ -128,7 +131,10 @@ function SelectRing({ walkerId }: { walkerId: string }) {
   );
 }
 
-export function Person({ walker }: { walker: Walker }) {
+/**
+ * `time` replaces the person's own clock (the demo customer runs on the case clock).
+ */
+export function Person({ walker, time }: { walker: Walker; time?: () => number }) {
   const root = useRef<Group>(null);
   const body = useRef<Group>(null);
   const legL = useRef<Group>(null);
@@ -141,14 +147,29 @@ export function Person({ walker }: { walker: Walker }) {
   // Each person keeps their own clock so a hovered rep can stand still while you read their card.
   const ownTime = useRef(0);
 
+  // After a demo conversation the rep walks back to where their route has got to.
+  const isCatchingUp = useRef(false);
+
   useFrame((_, delta) => {
     const g = root.current;
     if (!g) return;
-    const isHeld = isStaff && activeId(getSelection()) === walker.id;
+    const stage = isStaff ? stageFor(walker.id) : null;
+    const isHeld = isStaff && (stage !== null || activeId(getSelection()) === walker.id);
     if (!isHeld) ownTime.current += delta;
-    const t = ownTime.current;
+    const t = time ? time() : ownTime.current;
     const route = sampleRoute(walker.route, t + walker.offset);
-    const s = isHeld ? { ...route, moving: false } : route;
+    let s: Step & { label?: string; time: number } = isHeld ? { ...route, moving: false } : route;
+    if (stage) {
+      isCatchingUp.current = true;
+      s = { ...stepToward(g.position, stage, STAGE_SPEED, delta), label: "Talking to a customer", time: route.time };
+    } else if (isCatchingUp.current) {
+      const back = stepToward(g.position, route, CATCH_UP_SPEED, delta);
+      isCatchingUp.current = back.moving;
+      s = { ...back, moving: true, label: route.label, time: route.time };
+    } else {
+      const zone = talkZone(walker.branch, walker.id);
+      if (zone) s = { ...s, ...keepOut(s, zone) };
+    }
 
     g.position.set(s.x, 0, s.z);
     g.rotation.y += angleDelta(g.rotation.y, s.heading) * Math.min(1, delta * TURN_RATE);
@@ -220,6 +241,8 @@ export function Person({ walker }: { walker: Walker }) {
           <PinAnchor id={`staff-${walker.id}`} y={2.35} />
         </>
       )}
+      {/* Speech bubbles for demo conversations (labels only exist while one is playing) */}
+      <PinAnchor id={`speech-${walker.id}`} y={isStaff ? 3.1 : 2.45} />
     </group>
   );
 }

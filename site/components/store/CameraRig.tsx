@@ -21,6 +21,7 @@ const MIN_DISTANCE = 14;
 const MAX_DISTANCE = 75;
 const FLY_RATE = 3.2;
 const PAN_MARGIN = 20;
+const SPOT_DISTANCE = 26; // how close the camera comes for a demo conversation
 
 const direction = (azimuth: number) =>
   new Vector3(Math.sin(POLAR) * Math.sin(azimuth), Math.cos(POLAR), Math.sin(POLAR) * Math.cos(azimuth));
@@ -99,6 +100,9 @@ export function CameraRig({ enabled }: { enabled: boolean }) {
       goal.current = { target: c.target.clone(), distance: MathUtils.clamp(dist * cmd.factor, MIN_DISTANCE, MAX_DISTANCE) };
     } else if (cmd.kind === "home") {
       goal.current = { target: frameOf(MAIN_BRANCH), distance: homeDistance(aspectNow), dir: direction(AZIMUTH) };
+    } else if (cmd.kind === "spot") {
+      const b = branchById(cmd.branch);
+      if (b) goal.current = { target: new Vector3(b.x + cmd.x, 0, b.z + cmd.z), distance: SPOT_DISTANCE, dir: direction(AZIMUTH) };
     } else {
       const b = branchById(cmd.id);
       if (b) flyTo(b, aspectNow);

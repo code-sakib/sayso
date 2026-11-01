@@ -8,6 +8,8 @@ import { StorePanel } from "./overlay/StorePanel";
 import { StoreList } from "./overlay/StoreList";
 import { StaffCard } from "./overlay/StaffCard";
 import { ZoomControls } from "./overlay/Controls";
+import { CasePanel } from "./overlay/CasePanel";
+import { usePlayback } from "./cases/playback";
 
 // three.js needs the browser, so the scene is loaded on the client only.
 const StoreCanvas = dynamic(() => import("./StoreCanvas"), {
@@ -20,13 +22,15 @@ export function StoreSection() {
   const reduced = useMedia("(prefers-reduced-motion: reduce)");
   // On touch screens dragging would trap page scrolling, so there the store buttons move the camera.
   const finePointer = useMedia("(pointer: fine)");
+  const isCasePlaying = usePlayback().id !== null;
   return (
     <section className="store-section" id="store" ref={stageRef}>
       <StoreCanvas active={inView} still={reduced} interactive={finePointer} />
       <PinLayer />
       <StorePanel />
       <StoreList />
-      <StaffCard />
+      {!isCasePlaying && <StaffCard />}
+      <CasePanel />
       <ZoomControls />
       {finePointer && <div className="store-hint"><DragIcon />Drag to jump to the next store · right-drag to turn</div>}
     </section>

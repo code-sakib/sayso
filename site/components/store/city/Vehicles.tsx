@@ -6,6 +6,7 @@ import type { Group } from "three";
 import { Block, Slab, type Vec3 } from "../primitives";
 import { C } from "../palette";
 import { AVENUES, BACK_STREET, CITY, CROSS } from "./plan";
+import { townTime } from "../townClock";
 
 type VehicleKind = "car" | "taxi" | "bus" | "van";
 type VehicleSpec = { kind: VehicleKind; along: "x" | "z"; lane: number; dir: 1 | -1; speed: number; start: number; color?: string; from?: number; to?: number };
@@ -100,10 +101,10 @@ function Vehicle({ spec }: { spec: VehicleSpec }) {
   const ref = useRef<Group>(null);
   const from = spec.from ?? CITY.minX;
   const to = spec.to ?? CITY.maxX;
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!ref.current) return;
     const span = to - from;
-    const raw = spec.start - from + spec.dir * spec.speed * clock.elapsedTime;
+    const raw = spec.start - from + spec.dir * spec.speed * townTime();
     const t = (((raw % span) + span) % span) + from;
     if (spec.along === "x") ref.current.position.x = t;
     else ref.current.position.z = t;

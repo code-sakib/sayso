@@ -1,3 +1,6 @@
 .next/
 next-env.d.ts
 *.tsbuildinfo
+
+# Badge audio, camera uploads and generated reports (engine data)
+data/

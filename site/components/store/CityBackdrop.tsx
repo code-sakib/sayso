@@ -10,14 +10,19 @@ import { Person } from "./Person";
 import { PASSERS } from "./passers";
 import { C } from "./palette";
 import { CAMERA_VIEW } from "./selection";
+import { Lights } from "./StoreCanvas";
+import { townTime } from "./townClock";
 
 const STAGE_SELECTOR = ".store-section canvas";
 
+export type Placement = "above" | "below";
+
 /**
- * Uses the store camera, shifted up by exactly the hero's height (plus any gap down to the store),
- * so the hero shows the buildings right above whichever store is in view and the two line up.
+ * Uses the store camera, shifted by exactly this canvas's height: "above" shows the buildings right
+ * above whichever store is in view (the hero, so the two line up); "below" shows the street and park
+ * just below it (the section under the store).
  */
-function MirrorCamera() {
+function MirrorCamera({ placement }: { placement: Placement }) {
   const camera = useThree((s) => s.camera as PerspectiveCamera);
   const gl = useThree((s) => s.gl);
   useFrame(() => {
@@ -37,29 +42,34 @@ function MirrorCamera() {
     }
     camera.fov = STORE_FOV;
     camera.aspect = width / stageH;
-    camera.setViewOffset(width, stageH, 0, -(height + gap), width, height);
+    const offsetY = placement === "above" ? -(height + gap) : stageH;
+    camera.setViewOffset(width, stageH, 0, offsetY, width, height);
     camera.updateProjectionMatrix();
   });
   return null;
 }
 
 /** The same town as the store section, without shop interiors, labels or shadows. */
-export default function CityBackdrop({ active, still }: { active: boolean; still: boolean }) {
+export default function CityBackdrop({ active, still, placement = "above" }: { active: boolean; still: boolean; placement?: Placement }) {
   const frameloop = !active ? "never" : still ? "demand" : "always";
   return (
-    <Canvas flat dpr={0.75} frameloop={frameloop} gl={{ antialias: false }} camera={{ fov: STORE_FOV, near: 1, far: 400 }}>
+    <Canvas
+      flat
+      // The hero is washed out behind text, so it renders cheaply; below the store it is shown sharp
+      dpr={placement === "below" ? [1, 1.5] : 0.75}
+      frameloop={frameloop}
+      gl={{ antialias: placement === "below" }} camera={{ fov: STORE_FOV, near: 1, far: 400 }}>
       <color attach="background" args={[C.ground]} />
       <fog attach="fog" args={[C.ground, 110, 190]} />
-      <hemisphereLight args={["#FFFFFF", "#CFC8BA", 0.68]} />
-      <directionalLight position={[30, 50, 25]} intensity={1.25} />
-      <MirrorCamera />
+      <Lights />
+      <MirrorCamera placement={placement} />
       <City />
       {BRANCHES.map((b) => (
         <group key={b.id} position={[b.x, 0, b.z]}>
           <Building branch={b} withLabel={false} />
         </group>
       ))}
-      {PASSERS.map((w) => <Person key={w.id} walker={w} />)}
+      {PASSERS.map((w) => <Person key={w.id} walker={w} time={townTime} />)}
     </Canvas>
   );
 }
