@@ -5,6 +5,11 @@ import type { Complaint, Entry } from "../../../engine/types";
 import { ComplaintFields } from "./ComplaintFields";
 import { EntryProgress } from "./EntryProgress";
 import { SyncedAudio } from "./SyncedAudio";
+import { VideoPreview } from "./VideoPreview";
+import { DateField } from "../../ui/DateField";
+import { FileField } from "../../ui/FileField";
+import { StepperField } from "../../ui/StepperField";
+import { TimeField } from "../../ui/TimeField";
 import { createEntry, fetchEntry, startProcessing, uploadVideo } from "./api";
 
 type Member = { id: string; name: string };
@@ -109,6 +114,8 @@ export function LogEntry({ store, storeName, team }: { store: string; storeName:
   }
 
   const isBusy = phase.name !== "form";
+  const today = localDate(new Date());
+  const uploadShare = phase.name === "uploading" ? phase.share : phase.name === "tracking" ? 1 : null;
   return (
     <div className="log">
       <SyncedAudio store={store} date={date} team={team} onCount={onCount} />
@@ -122,23 +129,12 @@ export function LogEntry({ store, storeName, team }: { store: string; storeName:
           </div>
         </header>
         <fieldset className="log-fields" disabled={isBusy}>
-          <label>
-            <span>Day</span>
-            <input type="date" value={date} max={localDate(new Date())} onChange={(e) => setDate(e.target.value)} />
-          </label>
-          <label className="log-file">
-            <span>Camera file</span>
-            <input type="file" accept={VIDEO_ACCEPT} onChange={(e) => void pickFile(e.target.files?.[0] ?? null)} />
-          </label>
-          <label>
-            <span>Camera clock at the start</span>
-            <input type="time" step={1} value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-          </label>
-          <label>
-            <span>Sales from the till</span>
-            <input type="number" min={0} inputMode="numeric" value={sales} placeholder="e.g. 12" onChange={(e) => setSales(e.target.value)} />
-          </label>
+          <DateField label="Day" value={date} onChange={setDate} today={today} max={today} />
+          <FileField label="Camera file" accept={VIDEO_ACCEPT} file={file} onChange={(f) => void pickFile(f)} hint="MP4 or MOV, or drop it here" progress={uploadShare} />
+          <TimeField label="Camera clock at the start" value={startsAt} onChange={setStartsAt} withSeconds />
+          <StepperField label="Sales from the till" value={sales} onChange={setSales} placeholder="e.g. 12" />
         </fieldset>
+        {file && <VideoPreview file={file} />}
         <div className="log-sub">
           <h3>Complaints today <span className="muted">(optional)</span></h3>
           <p className="muted">If a customer blamed someone on the team, note it here. SaySo checks it against what their badge recorded.</p>
