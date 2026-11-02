@@ -116,3 +116,45 @@ export function SettingsIcon() {
     </svg>
   );
 }
+
+export function ChevronLeft() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" {...stroke}>
+      <path d="M15 6l-6 6 6 6" />
+    </svg>
+  );
+}
+
+export function ChevronRight() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" {...stroke}>
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+/** The small up-and-down chevrons on a macOS pop-up button. */
+export function UpDownIcon() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" {...stroke} strokeWidth={2.2}>
+      <path d="M8 9l4-4 4 4M8 15l4 4 4-4" />
+    </svg>
+  );
+}
+
+export function CheckIcon() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" {...stroke} strokeWidth={2.4}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
+export function FilmIcon() {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" {...stroke} strokeWidth={1.8}>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M10 9.5v5l4.5-2.5z" />
+    </svg>
+  );
+}

@@ -292,19 +292,12 @@
 .log-audio li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; }
 .log-audio li .mono { font-size: 12px; color: var(--ink-muted); }
 .log-audio li .muted { margin-left: auto; font-size: 13px; }
-.log-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.log-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; align-items: start; margin: 0; padding: 0; border: 0; min-width: 0; }
 .log-fields-plain { margin: 0; padding: 0; border: 0; min-width: 0; }
-.log-fields label, .log-complaint label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--ink-muted); min-width: 0; }
-.log-fields input, .log-complaint input, .log-complaint select, .log-complaint textarea {
-  font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 8px 10px; min-width: 0;
-}
-.log-fields input[type="file"] { padding: 6px; }
-.log-fields input:focus-visible, .log-complaint input:focus-visible, .log-complaint select:focus-visible, .log-complaint textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
-.log-complaint textarea { resize: vertical; }
 .log-sub h3 { margin: 0; font-size: 15px; }
 .log-sub > p { margin: 4px 0 12px; font-size: 13px; }
 .log-complaints { display: grid; gap: 12px; justify-items: start; }
-.log-complaint { width: 100%; display: grid; grid-template-columns: 140px 1fr 1fr auto; gap: 10px; align-items: end; margin: 0; padding: 14px; border: 1px solid var(--border-soft); border-radius: var(--radius-tile); background: var(--bg); }
+.log-complaint { width: 100%; display: grid; grid-template-columns: 150px 1fr 1fr auto; gap: 10px; align-items: end; margin: 0; padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
 .log-complaint-claim { grid-column: 1 / -2; }
 .log-complaint .btn { grid-column: -2; }
 .log-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; }
@@ -323,3 +316,9 @@
   .log-complaint-claim, .log-complaint .btn { grid-column: 1 / -1; }
   .log-card { padding: 18px; }
 }
+
+/* Camera file preview */
+.log-video { margin: 0; display: grid; gap: 10px; }
+.log-video video { width: 100%; max-height: 360px; border-radius: var(--radius-tile); background: #0A0A0A; object-fit: contain; }
+.log-video figcaption { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--ink-muted); }
+.log-video-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
