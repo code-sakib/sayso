@@ -31,3 +31,6 @@ node_modules/
 # PlatformIO / Arduino builds
 .pio/
 build/
+
+# Badge Wi-Fi password and upload token
+firmware/**/secrets.h
