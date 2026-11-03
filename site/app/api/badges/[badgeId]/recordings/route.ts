@@ -1,6 +1,8 @@
-import { BadgeUploadError, saveBadgeRecording } from "@/engine/storage/badgeAudio";
+import { BadgeUploadError, badgeOwner, saveBadgeRecording } from "@/engine/storage/badgeAudio";
 import { TooLargeError } from "@/engine/storage/files";
 import { fail, isBadgeAuthorised, ok } from "@/engine/http";
+import { arrivedMessage } from "@/engine/notify/messages";
+import { sendTelegram } from "@/engine/notify/telegram";
 
 export const runtime = "nodejs";
 
@@ -16,6 +18,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ badgeId
   if (!req.body) return fail(400, "No audio in the request.");
   try {
     const rec = await saveBadgeRecording(badgeId, startedAt, req.headers.get("content-type") ?? "", req.body);
+    // One a minute while recording, so it arrives without a sound
+    void sendTelegram(arrivedMessage(rec, badgeOwner(badgeId)?.repName ?? rec.repId), { silent: true });
     return ok({ badgeId: rec.badgeId, repId: rec.repId, startSec: rec.startSec, durationSec: rec.durationSec }, 201);
   } catch (err) {
     if (err instanceof BadgeUploadError) return fail(err.status, err.message);

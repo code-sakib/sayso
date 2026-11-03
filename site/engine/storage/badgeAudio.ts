@@ -31,7 +31,7 @@ export class BadgeUploadError extends Error {
 /** The rep and store a badge belongs to. */
 export const badgeOwner = (badgeId: string) => {
   const rep = STAFF_PROFILES.find((p) => p.badge.id === badgeId);
-  return rep ? { repId: rep.id, store: rep.branch } : null;
+  return rep ? { repId: rep.id, repName: rep.name, store: rep.branch } : null;
 };
 
 /**

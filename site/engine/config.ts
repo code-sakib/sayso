@@ -34,9 +34,14 @@ export const STAFF_LOOK: Record<string, string> = {
   fashion: "person wearing a cream shirt",
 };
 
+/** Stores are in India; badge alerts show this local time. */
+export const STORE_TIME_ZONE = "Asia/Kolkata";
+
 /** Entries one visitor may process an hour: every run spends real model credit. */
 export const RUNS_PER_HOUR = 6;
 
 export const dataDir = () => process.env.SAYSO_DATA_DIR ?? path.join(process.cwd(), "data");
 export const modelApiKey = () => process.env.MODEL_API_KEY || null;
 export const badgeToken = () => process.env.SAYSO_BADGE_TOKEN || null;
+export const telegramBotToken = () => process.env.TELEGRAM_BOT_TOKEN || null;
+export const telegramChatId = () => process.env.TELEGRAM_CHAT_ID || null;

@@ -12,6 +12,8 @@
 // Pieces go over HTTPS to the hosted SaySo server (SERVER_URL), so the badge works on any Wi-Fi with
 // internet, such as a phone hotspot. The button also works while it is still looking for Wi-Fi.
 //
+// DEMO BRANCH: also tells the server when recording starts and stops, for Telegram alerts.
+//
 // Settings (Wi-Fi, server, badge id, token) live in secrets.h, which git ignores.
 
 #include <ESP_I2S.h>
@@ -44,6 +46,7 @@ const unsigned long SLEEP_HOLD_MS = 2000;
 const unsigned long WIFI_WAIT_MS = 20000;
 const unsigned long RETRY_MS = 5000;
 const int HTTP_TIMEOUT_MS = 30000;
+const int EVENT_TIMEOUT_MS = 5000;  // a start/stop note is tiny; don't hold up sleep waiting for it
 const char *TIME_ZONE = "IST-5:30";  // store-local time, India
 
 struct Piece {
@@ -154,6 +157,22 @@ bool upload(const Piece *piece) {
   return code == 201;
 }
 
+/** Tells the server the badge started or stopped recording, for the Telegram alerts. Best effort. */
+void sendEvent(const String &json) {
+  if (WiFi.status() != WL_CONNECTED) return;
+  WiFiClientSecure tls;
+  tls.setInsecure();
+  HTTPClient http;
+  http.begin(tls, String(SERVER_URL) + "/api/badges/" + BADGE_ID + "/events");
+  http.setConnectTimeout(EVENT_TIMEOUT_MS);
+  http.setTimeout(EVENT_TIMEOUT_MS);
+  http.addHeader("Authorization", String("Bearer ") + BADGE_TOKEN);
+  http.addHeader("Content-Type", "application/json");
+  const int code = http.POST(json);
+  Serial.printf("EVENT %s -> %d\n", json.c_str(), code);
+  http.end();
+}
+
 /** Sends waiting pieces one by one, retrying the same piece until the server takes it. */
 void uploadTask(void *) {
   while (true) {
@@ -218,6 +237,7 @@ void syncClock() {
 /** Light off, wait for the button to be let go, then sleep until the next press. */
 void goToSleep() {
   digitalWrite(LIGHT_PIN, LOW);
+  sendEvent(String("{\"event\":\"stopped\",\"uploaded\":") + uploadedCount + "}");
   Serial.println("SLEEP (press the button to wake)");
   while (digitalRead(BUTTON_PIN) == HIGH) delay(20);
   delay(100);
@@ -264,6 +284,7 @@ void setup() {
   xTaskCreatePinnedToCore(recordTask, "record", 8192, nullptr, 3, nullptr, 1);
   xTaskCreatePinnedToCore(uploadTask, "upload", 16384, nullptr, 1, nullptr, 0);  // HTTPS needs the room
   Serial.println("RECORDING");
+  sendEvent("{\"event\":\"started\"}");  // recording runs in its own task, so it doesn't wait on this
 }
 
 void loop() {
