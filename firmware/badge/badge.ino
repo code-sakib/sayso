@@ -46,7 +46,9 @@ const unsigned long SLEEP_HOLD_MS = 2000;
 const unsigned long WIFI_WAIT_MS = 20000;
 const unsigned long RETRY_MS = 5000;
 const int HTTP_TIMEOUT_MS = 30000;
-const int EVENT_TIMEOUT_MS = 5000;  // a start/stop note is tiny; don't hold up sleep waiting for it
+const int EVENT_TIMEOUT_MS = 8000;  // a start/stop note is tiny; don't hold up sleep waiting for it
+const int EVENT_TRIES = 3;
+const int EVENT_RETRY_MS = 1500;
 const char *TIME_ZONE = "IST-5:30";  // store-local time, India
 
 struct Piece {
@@ -158,8 +160,7 @@ bool upload(const Piece *piece) {
 }
 
 /** Tells the server the badge started or stopped recording, for the Telegram alerts. Best effort. */
-void sendEvent(const String &json) {
-  if (WiFi.status() != WL_CONNECTED) return;
+bool postEvent(const String &json) {
   WiFiClientSecure tls;
   tls.setInsecure();
   HTTPClient http;
@@ -169,8 +170,17 @@ void sendEvent(const String &json) {
   http.addHeader("Authorization", String("Bearer ") + BADGE_TOKEN);
   http.addHeader("Content-Type", "application/json");
   const int code = http.POST(json);
-  Serial.printf("EVENT %s -> %d\n", json.c_str(), code);
+  Serial.printf("EVENT %s -> %d %s\n", json.c_str(), code, code < 0 ? http.errorToString(code).c_str() : "");
   http.end();
+  return code == 200;
+}
+
+/** The first connection after joining Wi-Fi sometimes fails, so try a few times. */
+void sendEvent(const String &json) {
+  for (int attempt = 0; attempt < EVENT_TRIES && WiFi.status() == WL_CONNECTED; attempt++) {
+    if (postEvent(json)) return;
+    delay(EVENT_RETRY_MS);
+  }
 }
 
 /** Sends waiting pieces one by one, retrying the same piece until the server takes it. */
