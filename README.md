@@ -40,6 +40,9 @@ Built solo for the **Meta Global AI Developer Hackathon** (Indie track, theme: *
 
 Work in progress. Hardware ordered 28 Oct 2026; firmware and pipeline in progress.
 
+Field-test alerts (Telegram messages when a badge starts, uploads and stops) live on the
+[`demo/telegram-alerts`](https://github.com/code-sakib/sayso/tree/demo/telegram-alerts) branch. They are a testing tool, kept out of the product on purpose.
+
 ## Licence
 
 [MIT](LICENSE)
