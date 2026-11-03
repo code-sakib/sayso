@@ -9,13 +9,16 @@
 // badge into deep sleep; a press wakes it, and it starts again from the top. The minute being recorded
 // when it sleeps is lost.
 //
+// Pieces go over HTTPS to the hosted SaySo server (SERVER_URL), so the badge works on any Wi-Fi with
+// internet, such as a phone hotspot. The button also works while it is still looking for Wi-Fi.
+//
 // Settings (Wi-Fi, server, badge id, token) live in secrets.h, which git ignores.
 
 #include <ESP_I2S.h>
-#include <ESPmDNS.h>
 #include <driver/rtc_io.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <time.h>
 #include "secrets.h"
 
@@ -130,17 +133,14 @@ void recordTask(void *) {
   }
 }
 
-/** The Mac's address: its .local name if the network answers, else the fixed IP from secrets.h. */
-String serverAddress() {
-  const IPAddress found = MDNS.queryHost(SERVER_MDNS_NAME, 2000);
-  return found == IPAddress() ? String(SERVER_IP) : found.toString();
-}
-
 bool upload(const Piece *piece) {
   if (WiFi.status() != WL_CONNECTED) return false;
+  // Encrypted, but the server's certificate is not checked: fine for the demo, pin it before real stores
+  WiFiClientSecure tls;
+  tls.setInsecure();
   HTTPClient http;
-  const String path = String("/api/badges/") + BADGE_ID + "/recordings?startedAt=" + piece->startedAt;
-  http.begin(serverAddress(), SERVER_PORT, path);
+  const String url = String(SERVER_URL) + "/api/badges/" + BADGE_ID + "/recordings?startedAt=" + piece->startedAt;
+  http.begin(tls, url);
   http.setTimeout(HTTP_TIMEOUT_MS);
   http.addHeader("Authorization", String("Bearer ") + BADGE_TOKEN);
   http.addHeader("Content-Type", "audio/wav");
@@ -165,12 +165,41 @@ void uploadTask(void *) {
   }
 }
 
+/** Network names with the curly apostrophe phones use (’) and the plain one (') count as the same. */
+String plainName(String name) {
+  name.replace("\xE2\x80\x99", "'");
+  name.replace("\xE2\x80\x98", "'");
+  return name;
+}
+
+/** The exact name of the nearby network that matches WIFI_SSID, or WIFI_SSID itself if none is seen. */
+String findNetwork() {
+  const String wanted = plainName(WIFI_SSID);
+  const int count = WiFi.scanNetworks();
+  String match = WIFI_SSID;
+  bool isSeen = false;
+  for (int i = 0; i < count; i++) {
+    if (plainName(WiFi.SSID(i)) == wanted) {
+      match = WiFi.SSID(i);
+      isSeen = true;
+      break;
+    }
+  }
+  WiFi.scanDelete();
+  Serial.printf("SCAN %d networks nearby, yours %s\n", count, isSeen ? "seen" : "NOT seen (is it on, and 2.4 GHz?)");
+  return match;
+}
+
 bool connectWifi() {
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.disconnect();  // stop the last attempt before starting a new one
+  WiFi.begin(findNetwork().c_str(), WIFI_PASSWORD);
   const unsigned long until = millis() + WIFI_WAIT_MS;
-  while (WiFi.status() != WL_CONNECTED && millis() < until) delay(250);
+  while (WiFi.status() != WL_CONNECTED && millis() < until) {
+    if (isLongPress()) goToSleep();  // let the wearer switch off while it searches
+    delay(20);
+  }
   if (WiFi.status() != WL_CONNECTED) return false;
   Serial.printf("WIFI connected to %s, badge address %s\n", WIFI_SSID, WiFi.localIP().toString().c_str());
   return true;
@@ -221,7 +250,6 @@ void setup() {
   Serial.printf("SaySo badge %s starting%s\n", BADGE_ID, isWake ? " (woken by the button)" : "");
 
   while (!connectWifi()) Serial.printf("WIFI could not join %s, trying again (is it 2.4 GHz?)\n", WIFI_SSID);
-  MDNS.begin(BADGE_ID);
   syncClock();
 
   mic.setPinsPdmRx(MIC_CLOCK_PIN, MIC_DATA_PIN);
@@ -234,7 +262,7 @@ void setup() {
 
   waiting = xQueueCreate(WAITING_PIECES, sizeof(Piece *));
   xTaskCreatePinnedToCore(recordTask, "record", 8192, nullptr, 3, nullptr, 1);
-  xTaskCreatePinnedToCore(uploadTask, "upload", 8192, nullptr, 1, nullptr, 0);
+  xTaskCreatePinnedToCore(uploadTask, "upload", 16384, nullptr, 1, nullptr, 0);  // HTTPS needs the room
   Serial.println("RECORDING");
 }
 
