@@ -165,11 +165,6 @@ p { margin: 0; }
   font-size: 19px;
   letter-spacing: -0.02em;
 }
-.logo-mark { width: 22px; height: 22px; }
-/* Not shown for now: the logo (nav and footer) and the "Try the badge" link are blurred out */
-.logo, .is-hidden-for-now { filter: blur(6px); user-select: none; }
-.is-hidden-for-now { pointer-events: none; }
-.logo-mark .rec-fill { fill: var(--rec); }
 
 /* ─── Buttons ─── */
 .btn {

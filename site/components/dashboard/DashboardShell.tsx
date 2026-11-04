@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogoMark } from "../LogoMark";
 import { MenuIcon } from "../Icons";
 import { DashboardDrawer } from "./DashboardDrawer";
 import { MAIN_BRANCH } from "../store/branches";
@@ -54,7 +53,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <MenuIcon />
         </button>
         <Link href="/" className="logo" aria-label="SaySo home">
-          <LogoMark />
           sayso
         </Link>
         <div className="dash-header-end">
