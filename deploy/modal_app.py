@@ -61,7 +61,7 @@ def commit_forever() -> None:
     routing_region="ap-south",
 )
 @modal.concurrent(max_inputs=100)
-@modal.web_server(port=PORT, startup_timeout=180)
+@modal.web_server(port=PORT, startup_timeout=180, label="sayso")
 def web() -> None:
     subprocess.Popen(["npx", "next", "start", "-p", str(PORT), "-H", "0.0.0.0"], cwd=APP_DIR)
     threading.Thread(target=commit_forever, daemon=True).start()
