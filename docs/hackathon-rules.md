@@ -15,7 +15,7 @@ Source: the host's words at the kickoff stream (Meta × Cerebral Valley), saved 
 | Team size: 1–4, all approved | Solo, Indie track |
 | Theme | **Build for Your World**: a problem you know firsthand, in your own domain |
 | **3-minute demo video** with a good voiceover | The most important part of the submission. Plan the script and record it early |
-| Deadline | **4 Nov 2026, 9 PM ET** (6:30 AM IST on 5 Nov). Review the submission form early |
+| Deadline | **4 Nov 2026, 9 PM ET** (7:30 AM IST on 5 Nov; US clocks moved back on 1 Nov). Review the submission form early |
 
 ## Judging
 
@@ -67,3 +67,33 @@ For our judging process. So after you submitted the project, it's November 4th, 
 As a reminder, what to submit for this hackathon? Again, the submission link is on the platform, so after this kickoff, you'll see a submit project button on the event page where you signed up. Make sure to review that form because that's where you will submit all the details on your project. One important thing, very important thing to submit is that three-minute demo video. It is important to focus on that three-minute demo video because that is one of the major parts of how you will be judged. So make sure to have a good voiceover on it, make sure to take some time and produce it well, essentially describing your project, what you built, showing it in action. Also, as part of the submission, make sure to submit a public GitHub repository. We've had numerous times where people have made it closed source, and I just want to remind you again: please make sure to open that. That way, our team can review it as well. Also, the deadline is November 4th at 9 p.m. ET, so please submit it on time. And please review the form early so you know what's coming and do not wait until the last hour to submit.
 
 Folks, that's pretty much all of the information on the rules and logistics. For any more questions, please direct your questions into the Discord. There we have a forum on the questions channel. We've got office hours for the Meta team. We've got the team search channel if you're looking for a team. Throughout the day, we'll be answering all the questions. I know there's a lot in the chat, so we will be going through that today and answering. And then the first live session will be tomorrow at noon ET. And then we'll have another one on Wednesday as well. But other than that, that's pretty much it. I'm very excited to see what everyone builds over the course of the 10 days. And as a reminder, please make sure to review that submission form and please get started to think not only about the project idea, but then how you will present it to the judges as well and how you'd build it. Happy hacking, folks. I'm excited to see what you can build with the Meta models. Good luck.
+
+## Organiser answers on the submission (4 Nov 2026)
+
+Saved from the organisers' replies, based on the published rules.
+
+| Topic | Answer |
+|---|---|
+| Demo video | Show the working product built during the event, not slides. Open with one line on what existed before and what was built this week. Show the end-to-end flow with live Meta model calls visible, and briefly where and how Meta's models are used. No code walkthrough needed. Most of the video should be real footage of the product running |
+| Video scoring | Impact, Use of Meta AI Tooling, Technical Depth and Execution, Demo |
+| Length | **3:00 or less**, understandable in English. Judges stop watching at 3:00 |
+| Other materials | Public GitHub repo, a demo video link (YouTube, Loom or similar, playable without logging in), and every accepted teammate added |
+| Setup instructions | Judges work from the public repo's setup instructions. The README must explain how to run the project and how to add a Meta Model API key (for example a `.env.example`). Never commit keys |
+| Hosted version | Not required. The project must run from the repo's setup instructions, and the recorded video is part of the submission |
+| Repository | Public on GitHub, created on 26 Oct or later, holding only work done during the event |
+| Judging weights | **Impact 30%**, **Use of Meta AI Tooling 25%**, **Technical Depth and Execution 20%**, **Demo 25%**. Complexity isn't scored for its own sake: a focused project that solves a real problem with Meta's models and has a clear working demo does well |
+| Models | Every model the project calls at runtime must be a Meta model |
+| Edits | The submission and repo can be changed until the deadline, then no edits. Submitting early gives no advantage |
+| Where to submit | https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit |
+
+## Submission checklist
+
+- [ ] Repo public, created after 26 Oct (created 29 Oct 2026)
+- [ ] Final work merged into `main`, the branch judges see
+- [ ] README: how to run it, and how to add the Meta Model API key (`site/.env.example`)
+- [ ] No keys or secrets in the repo
+- [ ] Every runtime model is a Meta model (Muse Voice Transcribe, SAM 3.1, Muse Spark)
+- [ ] Demo video ≤ 3:00, English, opens with "before vs. built this week", real product footage, Meta model calls visible
+- [ ] Video uploaded (YouTube unlisted or Loom), playable without logging in
+- [ ] Form submitted before 9 PM ET (7:30 AM IST)
+
