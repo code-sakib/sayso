@@ -153,7 +153,13 @@ bool upload(const Piece *piece) {
   if (code == 201) {
     Serial.printf("UPLOAD ok, piece from %s\n", piece->startedAt);
   } else {
-    Serial.printf("UPLOAD failed (%d): %s\n", code, code > 0 ? http.getString().c_str() : http.errorToString(code).c_str());
+    char tlsError[100] = "";
+    tls.lastError(tlsError, sizeof(tlsError));
+    IPAddress ip;
+    const bool isFound = WiFi.hostByName(String(SERVER_URL).substring(8).c_str(), ip);
+    Serial.printf("UPLOAD failed (%d): %s | tls: %s | dns: %s | heap %u, largest %u\n", code,
+                  code > 0 ? http.getString().c_str() : http.errorToString(code).c_str(), tlsError,
+                  isFound ? ip.toString().c_str() : "FAILED", ESP.getFreeHeap(), ESP.getMaxAllocHeap());
   }
   http.end();
   return code == 201;
@@ -300,10 +306,10 @@ void setup() {
 void loop() {
   static unsigned long lastReport = 0;
   if (isLongPress()) goToSleep();
-  if (millis() - lastReport > 30000) {
+  if (millis() - lastReport > 15000) {
     lastReport = millis();
-    Serial.printf("STATUS wifi=%s uploaded=%lu dropped=%lu waiting=%u free_psram=%u\n",
-                  WiFi.status() == WL_CONNECTED ? "on" : "off", uploadedCount, droppedCount,
+    Serial.printf("STATUS wifi=%s signal=%d dBm uploaded=%lu dropped=%lu waiting=%u free_psram=%u\n",
+                  WiFi.status() == WL_CONNECTED ? "on" : "off", WiFi.RSSI(), uploadedCount, droppedCount,
                   (unsigned)uxQueueMessagesWaiting(waiting), (unsigned)ESP.getFreePsram());
   }
   delay(20);
