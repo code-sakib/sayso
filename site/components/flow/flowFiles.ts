@@ -12,6 +12,6 @@ export function filesFor(branchId: string): FlowFile[] {
     detail: `${p.name.split(" ")[0]}'s badge · ${p.badge.talkTime}`,
     from: `staff-${p.id}`,
   }));
-  const video: FlowFile = { key: "cctv", kind: "video", name: "store-cam-1.mp4", detail: "Store camera · 10h", from: `cctv-${branchId}` };
+  const video: FlowFile = { key: "cctv", kind: "video", name: "store-cam-1.mp4", detail: "Your CCTV · optional", from: `cctv-${branchId}` };
   return [...audio, video];
 }
