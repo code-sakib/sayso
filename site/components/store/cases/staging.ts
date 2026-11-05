@@ -13,13 +13,16 @@ const CLEAR_OPENS = 1.2;
 
 export type Stage = { x: number; z: number; faceX: number; faceZ: number };
 
-/** The spot the rep holds while their case plays; null once the customer has gone. */
+/** The spot a rep (or the senior they call over) holds while their case plays; null once the customer has gone. */
 export function stageFor(walkerId: string): Stage | null {
   const p = getPlayback();
   const c = caseById(p.id);
-  if (!c || c.repId !== walkerId) return null;
+  const isRep = c?.repId === walkerId;
+  const isSenior = c?.senior?.id === walkerId;
+  if (!c || (!isRep && !isSenior)) return null;
   const holdUntil = p.arriveAfter > 0 ? p.arriveAfter + talkSeconds(c) : Infinity;
   if (caseElapsed() > holdUntil) return null;
+  if (isSenior && c.senior) return { ...c.senior.spot, faceX: c.repSpot.x, faceZ: c.repSpot.z };
   return { ...c.repSpot, faceX: c.customerSpot.x, faceZ: c.customerSpot.z };
 }
 
@@ -27,7 +30,7 @@ export function stageFor(walkerId: string): Stage | null {
 export function talkZone(branch: string, walkerId: string): Zone | null {
   const p = getPlayback();
   const c = caseById(p.id);
-  if (!c || c.branch !== branch || walkerId === c.repId || walkerId === CASE_CUSTOMER_ID) return null;
+  if (!c || c.branch !== branch || walkerId === c.repId || walkerId === c.senior?.id || walkerId === CASE_CUSTOMER_ID) return null;
   const elapsed = caseElapsed();
   const holdUntil = p.arriveAfter > 0 ? p.arriveAfter + talkSeconds(c) : Infinity;
   if (elapsed > holdUntil) return null;

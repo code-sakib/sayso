@@ -36,6 +36,7 @@ const spark = (over: Partial<SparkReport> = {}): SparkReport => ({
   ],
   disputes: [{ complaintIndex: 0, conversationId: "c1", title: "\"He was rude\"", finding: "He was polite.", verdict: "cleared", outcome: "Thank the customer." }],
   notes: [{ repId: "jake", note: "Learn the plans." }, { repId: "ghost", note: "Not on the team." }],
+  customerSpeakers: [],
   ...over,
 });
 

@@ -53,7 +53,7 @@ export function FlowSection() {
   useFlowScroll({ section, files: fileEls, slots: slotEls, machine }, sources, STEPS.length, isStill);
 
   return (
-    <section className="flow" ref={section} aria-labelledby="flow-title">
+    <section id="flow" className="flow" ref={section} aria-labelledby="flow-title">
       <div className="flow-stage">
         {/* The town carries on below the store */}
         <HeroBackdrop placement="below" />

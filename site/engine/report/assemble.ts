@@ -17,6 +17,8 @@ export type AssembleInput = {
   conversations: Conversation[];
   camera: CameraSummary;
   complaints: Complaint[];
+  /** False drops the lines Spark marked as the shopper's from every transcript. */
+  includeCustomer?: boolean;
 };
 
 const normalise = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
@@ -44,11 +46,16 @@ const offsetSeconds = (at: string) => {
 
 /** The rep's real lines, with the camera notes slotted in by time. */
 function transcriptFor(conversation: Conversation, notes: SparkMoment["cameraNotes"]): Line[] {
-  const rep = conversation.lines.map((l) => ({ sec: l.atSec - conversation.startSec, who: "rep" as const, text: l.text }));
+  const rep = conversation.lines.map((l) => ({ sec: l.atSec - conversation.startSec, who: "rep" as const, text: l.text, speaker: l.speaker }));
   const seen = notes.map((n) => ({ sec: offsetSeconds(n.at), who: "customer" as const, text: n.text.trim() })).filter((n) => n.text);
   return [...rep, ...seen]
     .sort((a, b) => a.sec - b.sec)
-    .map((l) => ({ at: Number.isFinite(l.sec) ? formatOffset(l.sec) : formatOffset(conversation.endSec - conversation.startSec), who: l.who, text: l.text }));
+    .map((l) => ({
+      at: Number.isFinite(l.sec) ? formatOffset(l.sec) : formatOffset(conversation.endSec - conversation.startSec),
+      who: l.who,
+      text: l.text,
+      ...("speaker" in l && l.speaker ? { speaker: l.speaker } : {}),
+    }));
 }
 
 const recordingLabel = (c: Conversation, team: Map<string, TeamMember>, date: string) => {
@@ -116,8 +123,17 @@ function toNotes(spark: SparkReport["notes"], team: Map<string, TeamMember>): Re
   return spark.filter((n) => team.has(n.repId) && !seen.has(n.repId) && seen.add(n.repId) && n.note.trim());
 }
 
+/** The conversations with the shopper's lines taken out; a conversation left with no staff lines is dropped. */
+function withoutCustomer(conversations: Conversation[], speakers: string[]): Conversation[] {
+  const drop = new Set(speakers.map((s) => s.trim()));
+  return conversations
+    .map((c) => ({ ...c, lines: c.lines.filter((l) => !l.speaker || !drop.has(l.speaker)) }))
+    .filter((c) => c.lines.length > 0);
+}
+
 export function assembleReport(spark: SparkReport, input: AssembleInput): DayReport {
-  const byId = new Map(input.conversations.map((c) => [c.id, c]));
+  const conversations = input.includeCustomer === false ? withoutCustomer(input.conversations, spark.customerSpeakers) : input.conversations;
+  const byId = new Map(conversations.map((c) => [c.id, c]));
   const team = new Map(input.team.map((m) => [m.id, m]));
   const customers = input.camera.visits.length;
   return {

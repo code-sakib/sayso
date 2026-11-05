@@ -5,7 +5,7 @@ import { branchById } from "../branches";
 import { profileById } from "../staff";
 import { pin, sendCamera } from "../selection";
 import { followAnchor } from "../pins";
-import { CASES, caseById, lineAt, talkSeconds, type CaseLine, type StoreCase } from "../cases/cases";
+import { CASES, caseById, lineAt, talkSeconds, type CaseLine, type Speaker, type StoreCase } from "../cases/cases";
 import { holdAt, playCase, stopCase } from "../cases/playback";
 import { CASE_CUSTOMER_ID } from "../cases/CaseCustomer";
 import { useCaseClock } from "../cases/useCaseClock";
@@ -52,7 +52,11 @@ function phaseOf(elapsed: number, arriveAfter: number, c: StoreCase, isHeld: boo
 }
 
 function Transcript({ c, talkTime }: { c: StoreCase; talkTime: number }) {
-  const rep = profileById(c.repId);
+  const names: Record<Speaker, string | undefined> = {
+    rep: profileById(c.repId)?.name.split(" ")[0],
+    senior: c.senior && profileById(c.senior.id)?.name.split(" ")[0],
+    customer: "Customer",
+  };
   const current = lineAt(c, talkTime);
   const said = c.lines.filter((l) => talkTime >= l.at);
   if (said.length === 0) return <p className="case-wait">The badge is listening…</p>;
@@ -60,8 +64,8 @@ function Transcript({ c, talkTime }: { c: StoreCase; talkTime: number }) {
     <ol className="case-lines">
       {said.map((l: CaseLine) => (
         <li key={l.at} className={`is-${l.who}${l === current ? " is-now" : ""}`}>
-          <span className="case-who">{l.who === "rep" ? rep?.name.split(" ")[0] : "Customer"}</span>
-          {l.who === "rep" ? <span>{l.text}</span> : <span className="case-removed">Voice removed on the badge</span>}
+          <span className="case-who">{names[l.who]}</span>
+          {l.who === "customer" ? <span className="case-removed">Voice removed on the badge</span> : <span>{l.text}</span>}
         </li>
       ))}
     </ol>
@@ -150,13 +154,13 @@ function CaseCard({ c, elapsed, arriveAfter, isHeld }: { c: StoreCase; elapsed: 
   );
 }
 
-/** Speech bubbles over the rep and the customer while they talk. */
+/** Speech bubbles over the rep, the customer and any senior rep while they talk. */
 function SpeechBubbles({ c, talkTime, isTalking }: { c: StoreCase; talkTime: number; isTalking: boolean }) {
   const line = isTalking ? lineAt(c, talkTime) : undefined;
   return (
     <div className="pin-layer" aria-hidden="true">
-      {(["rep", "customer"] as const).map((who) => {
-        const id = `speech-${who === "rep" ? c.repId : CASE_CUSTOMER_ID}`;
+      {(c.senior ? (["rep", "senior", "customer"] as const) : (["rep", "customer"] as const)).map((who) => {
+        const id = `speech-${who === "rep" ? c.repId : who === "senior" ? c.senior?.id : CASE_CUSTOMER_ID}`;
         const text = line?.who === who ? line.text : null;
         return (
           <div key={who} ref={followAnchor(id)} className={`speech is-${who}${text ? " is-on" : ""}`}>

@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { branchById, type Branch } from "../branches";
+import { useState } from "react";
+import { branchById } from "../branches";
 import { LIVE_ACTIVITY } from "../people";
 import type { StaffProfile } from "../staff";
 import { pin } from "../selection";
 import { StoreLogo } from "./StoreLogo";
 import { useLive } from "./useLive";
-import { countShoppersInside, readCurrentBranchId, teamSummary } from "./storeStats";
+import { readCurrentBranchId, teamSummary } from "./storeStats";
 
-type Tab = "staff" | "badges" | "customers";
+type Tab = "staff" | "badges";
 
 const readActivities = () => JSON.stringify([...LIVE_ACTIVITY].map(([id, a]) => [id, a.label ?? ""]));
 
@@ -57,50 +57,27 @@ function BadgeRows({ team }: { team: StaffProfile[] }) {
   });
 }
 
-function CustomerRows({ branch }: { branch: Branch }) {
-  const readInside = useCallback(() => countShoppersInside(branch.id), [branch.id]);
-  const inside = useLive(readInside);
-  const t = teamSummary(branch.id);
-  const rows: [string, string, string?][] = [
-    ["Inside now", String(inside), "is-good"],
-    ["Served today", String(t.served)],
-    ["Bought", `${t.sales} · ${Math.round((t.sales / Math.max(1, t.served)) * 100)}%`],
-    ["Walked out", String(t.walkouts), t.walkouts > 5 ? "is-rec" : undefined],
-  ];
-  return rows.map(([label, value, tone]) => (
-    <div key={label} className="ov-line is-static">
-      <span className="ov-line-who"><b>{label}</b></span>
-      <span className={`ov-pill ${tone ?? ""}`}>{value}</span>
-    </div>
-  ));
-}
-
-/** Top-left panel: live numbers for whichever store the camera is looking at. Rows open on "More". */
+/** Top-left panel: the team and badges of whichever store the camera is looking at. Rows open when you tap a tab. */
 export function StorePanel() {
   const [tab, setTab] = useState<Tab>("staff");
   const [isOpen, setOpen] = useState(false);
   const branch = branchById(useLive(readCurrentBranchId));
-  const readInside = useCallback(() => (branch ? countShoppersInside(branch.id) : 0), [branch]);
-  const inside = useLive(readInside);
   if (!branch) return null;
   const t = teamSummary(branch.id);
   const tabs: [Tab, string, string][] = [
     ["staff", "Staff", String(t.team.length)],
     ["badges", "Badges", `${t.recording}/${t.team.length}`],
-    ["customers", "Customers", String(inside)],
   ];
+  // Tapping the open tab again closes the rows
   const choose = (id: Tab) => {
+    setOpen(!(isOpen && tab === id));
     setTab(id);
-    setOpen(true);
   };
   return (
     <div className={`ov-card ov-panel${isOpen ? " is-open" : ""}`}>
       <div className="ov-panel-head">
         <StoreLogo branch={branch} />
         <span className="ov-panel-store"><b>{branch.street}</b><span><span className="dot is-rec live" />{branch.kind} · live</span></span>
-        <button className="ov-more" aria-expanded={isOpen} onClick={() => setOpen(!isOpen)}>
-          {isOpen ? "Less" : "More"}<Chevron />
-        </button>
       </div>
       <div className="ov-tabs" role="tablist" aria-label="Store data">
         {tabs.map(([id, label, count]) => (
@@ -113,7 +90,6 @@ export function StorePanel() {
         <div className="ov-lines" role="tabpanel">
           {tab === "staff" && <StaffRows team={t.team} />}
           {tab === "badges" && <BadgeRows team={t.team} />}
-          {tab === "customers" && <CustomerRows branch={branch} />}
         </div>
       )}
     </div>

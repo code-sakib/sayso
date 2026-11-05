@@ -2,6 +2,7 @@
 // clock, and split a rep's day wherever they went quiet for a while.
 
 import { CONVERSATION_GAP_SECONDS } from "../config.ts";
+import { formatClock } from "./clock.ts";
 
 /** One transcribed turn from a badge file, timed from the start of that file. */
 export type SpeechTurn = { startMs: number; endMs: number; text: string; speaker?: string };
@@ -10,7 +11,8 @@ export type SpeechTurn = { startMs: number; endMs: number; text: string; speaker
 export type BadgeTranscript = { repId: string; badgeId: string; startSec: number; turns: SpeechTurn[] };
 
 /** A rep line on the store clock. */
-export type RepLine = { atSec: number; endSec: number; text: string };
+/** A line on the store clock. `speaker` is set on field tests, where every voice is kept. */
+export type RepLine = { atSec: number; endSec: number; text: string; speaker?: string };
 
 export type Conversation = { id: string; repId: string; badgeId: string; startSec: number; endSec: number; lines: RepLine[] };
 
@@ -19,18 +21,33 @@ export type Conversation = { id: string; repId: string; badgeId: string; startSe
  * that got past the badge's loudness gate is dropped here, so customer speech never reaches a report.
  */
 export function keepWearer(turns: SpeechTurn[]): SpeechTurn[] {
-  const labelled = turns.filter((t) => t.speaker);
-  if (labelled.length === 0) return turns;
-  const talkTime = new Map<string, number>();
-  for (const t of labelled) talkTime.set(t.speaker!, (talkTime.get(t.speaker!) ?? 0) + (t.endMs - t.startMs));
-  const wearer = [...talkTime.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))[0];
-  return turns.filter((t) => t.speaker === wearer);
+  const wearer = wearerOf(turns);
+  return wearer === null ? turns : turns.filter((t) => t.speaker === wearer);
 }
 
-const toLines = (file: BadgeTranscript): RepLine[] =>
-  keepWearer(file.turns)
+/** The speaker label heard most in a file: the badge wearer. Null when nothing is labelled. */
+export function wearerOf(turns: SpeechTurn[]): string | null {
+  const labelled = turns.filter((t) => t.speaker);
+  if (labelled.length === 0) return null;
+  const talkTime = new Map<string, number>();
+  for (const t of labelled) talkTime.set(t.speaker!, (talkTime.get(t.speaker!) ?? 0) + (t.endMs - t.startMs));
+  return [...talkTime.entries()].reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+}
+
+/**
+ * A shopper wore the badge on a field test and agreed to be recorded, so every voice is kept with
+ * its speaker label. Muse Spark works out from what was said who the shopper is and who are staff.
+ * Labels restart in every file, so they're prefixed with the file's clock time to stay distinct.
+ */
+const toLines = (file: BadgeTranscript, wornBy: "rep" | "shopper"): RepLine[] =>
+  (wornBy === "shopper" ? file.turns : keepWearer(file.turns))
     .filter((t) => t.text.trim().length > 0)
-    .map((t) => ({ atSec: file.startSec + t.startMs / 1000, endSec: file.startSec + t.endMs / 1000, text: t.text.trim() }));
+    .map((t) => ({
+      atSec: file.startSec + t.startMs / 1000,
+      endSec: file.startSec + t.endMs / 1000,
+      text: t.text.trim(),
+      ...(wornBy === "shopper" ? { speaker: `${formatClock(file.startSec)}/${t.speaker ?? "?"}` } : {}),
+    }));
 
 /** Split one rep's lines (in time order) wherever the gap is longer than `gapSec`. */
 function splitOnGaps(lines: RepLine[], gapSec: number): RepLine[][] {
@@ -43,11 +60,11 @@ function splitOnGaps(lines: RepLine[], gapSec: number): RepLine[][] {
 }
 
 /** Every conversation of the day across all badges, in clock order, with ids c1, c2, … */
-export function buildConversations(files: BadgeTranscript[], gapSec = CONVERSATION_GAP_SECONDS): Conversation[] {
+export function buildConversations(files: BadgeTranscript[], gapSec = CONVERSATION_GAP_SECONDS, wornBy: "rep" | "shopper" = "rep"): Conversation[] {
   const byRep = new Map<string, { badgeId: string; lines: RepLine[] }>();
   for (const f of files) {
     const prev = byRep.get(f.repId);
-    byRep.set(f.repId, { badgeId: f.badgeId, lines: [...(prev?.lines ?? []), ...toLines(f)] });
+    byRep.set(f.repId, { badgeId: f.badgeId, lines: [...(prev?.lines ?? []), ...toLines(f, wornBy)] });
   }
   const unnumbered = [...byRep.entries()].flatMap(([repId, { badgeId, lines }]) =>
     splitOnGaps([...lines].sort((a, b) => a.atSec - b.atSec), gapSec).map((group) => ({

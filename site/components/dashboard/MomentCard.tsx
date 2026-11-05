@@ -1,11 +1,11 @@
-import { profileById } from "../store/staff";
+import { repCardById } from "../store/staff";
 import type { Moment } from "./reports/types";
 import { KIND } from "./kinds";
 import { Transcript } from "./Transcript";
 
 /** One conversation from the day: who walked in, what was said, what to say next time. */
 export function MomentCard({ moment }: { moment: Moment }) {
-  const rep = profileById(moment.repId);
+  const rep = repCardById(moment.repId);
   const kind = KIND[moment.kind];
   const firstName = rep?.name.split(" ")[0] ?? "Rep";
   return (

@@ -6,7 +6,8 @@ export type MomentKind = "walkout" | "save" | "wait";
  * One turn of a conversation. The rep's turns are what they said. The customer's voice is
  * removed on the badge, so their turns hold only what the camera saw them do.
  */
-export type Line = { at: string; who: "rep" | "customer"; text: string };
+/** `speaker` is set on field tests, where every voice is kept and shown by its Muse speaker label. */
+export type Line = { at: string; who: "rep" | "customer"; text: string; speaker?: string };
 
 /** One sales conversation worth the owner's attention, picked out of the day. */
 export type Moment = {

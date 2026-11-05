@@ -3,7 +3,16 @@
 import type { ApiResult, Complaint, Entry } from "../../../engine/types";
 
 export type SyncedRecording = { badgeId: string; repId: string; startSec: number; durationSec: number };
-export type NewEntryBody = { date: string; videoStartsAt: string; sales: number; complaints: Complaint[] };
+export type NewEntryBody = {
+  date: string;
+  videoStartsAt: string;
+  sales: number;
+  complaints: Complaint[];
+  window?: { from: string; to: string };
+  badgeWornBy?: "rep" | "shopper";
+  includeCustomer?: boolean;
+  place?: string;
+};
 
 async function call<T>(url: string, init?: RequestInit): Promise<T> {
   let res: Response;

@@ -13,7 +13,12 @@ export function DayCard({ storeId, day, isLatest }: { storeId: string; day: DayR
           <b>{weekday}</b>
           <span>{short}</span>
         </span>
-        {isLatest && <span className="day-card-tag">Latest</span>}
+        {isLatest && (
+          <span className="day-card-tags">
+            <span className="day-card-tag is-inspect">Inspect mode available</span>
+            <span className="day-card-tag">Latest</span>
+          </span>
+        )}
       </div>
       <p className="day-card-headline">{day.headline}</p>
       <ul className="day-card-moments" aria-label="Moments">
