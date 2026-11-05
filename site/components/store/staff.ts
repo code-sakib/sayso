@@ -145,5 +145,12 @@ export const STAFF_PROFILES: StaffProfile[] = [
   },
 ];
 
+/** The rep a shopper talked to on a field-test visit to a real store. Not part of the demo stores. */
+export const FIELD_TEST_REP = { id: "adil", name: "Adil", role: "Sales rep", section: "Shop floor" } as const;
+
 export const profileById = (id: string) => STAFF_PROFILES.find((p) => p.id === id);
+
+/** Name, role and section for a report card: a demo-store profile or the field-test rep. */
+export const repCardById = (id: string): Pick<StaffProfile, "id" | "name" | "role" | "section"> | undefined =>
+  profileById(id) ?? (id === FIELD_TEST_REP.id ? FIELD_TEST_REP : undefined);
 export const profilesIn = (branch: string) => STAFF_PROFILES.filter((p) => p.branch === branch);

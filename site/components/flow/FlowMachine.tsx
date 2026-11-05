@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import { waveBars } from "./flowMath";
 
 export const STEPS = [
-  { title: "Remove customer voices", model: "SAM Audio" },
+  { title: "Drop customer voices unless they agree", model: "Muse Spark" },
   { title: "Write down what the rep said", model: "Muse Voice Transcribe" },
   { title: "Spot walkouts and long waits", model: "SAM 3.1" },
   { title: "Write a coaching note", model: "Muse Spark" },
@@ -12,7 +12,7 @@ const BARS = waveBars(56);
 
 /**
  * The pipeline the files drop into. useFlowScroll sets --work (0..1), data-step and the step
- * classes as you scroll; the customer lane goes flat once SAM Audio has run.
+ * classes as you scroll; the customer lane goes flat once customer voices are dropped.
  */
 export function FlowMachine({ boxRef, fileCount }: { boxRef: RefObject<HTMLDivElement | null>; fileCount: number }) {
   return (

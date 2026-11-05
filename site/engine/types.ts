@@ -18,8 +18,16 @@ export type Entry = {
   store: string;
   /** ISO date of the day being logged. */
   date: string;
-  /** Store clock time at the first frame of the camera file, "18:30" or "18:30:15". */
+  /** Store clock time at the first frame of the camera file, "18:30" or "18:30:15". Empty when there is no camera file. */
   videoStartsAt: string;
+  /** Only badge files that start inside this clock window are used, e.g. one store visit. */
+  window?: { from: string; to: string };
+  /** Who wore the badge. A shopper on a field test keeps the other voices (the reps) instead of their own. */
+  badgeWornBy?: "rep" | "shopper";
+  /** Shopper-worn visits only: false keeps the customer's voice out of the report. Defaults to true. */
+  includeCustomer?: boolean;
+  /** Names the place in the report instead of the demo store, e.g. "Footwear store (field test)". */
+  place?: string;
   sales: number;
   complaints: Complaint[];
   video: { name: string; bytes: number } | null;

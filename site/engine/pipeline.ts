@@ -17,6 +17,7 @@ import type { SparkReport } from "./report/schema.ts";
 import { parseClock } from "./timeline/clock.ts";
 import { buildConversations, type BadgeTranscript, type SpeechTurn } from "./timeline/conversations.ts";
 import { summariseCamera } from "./timeline/visits.ts";
+import { FIELD_TEST_REP } from "../components/store/staff.ts";
 import type { BadgeRecording, Entry, Step, StepId } from "./types.ts";
 
 export type EngineDeps = {
@@ -76,28 +77,38 @@ async function stepRun<T>(deps: EngineDeps, id: StepId, work: () => Promise<{ va
   }
 }
 
+/** Mark a step as not needed today and carry on with a stand-in value. */
+async function skipStep<T>(deps: EngineDeps, id: StepId, detail: string, value: T): Promise<T> {
+  await deps.step(id, "skipped", detail);
+  return value;
+}
+
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 export async function runPipeline(ctx: RunContext, deps: EngineDeps): Promise<DayReport> {
   const { entry } = ctx;
-  const videoStart = parseClock(entry.videoStartsAt);
+  const hasVideo = entry.video !== null;
+  const videoStart = hasVideo ? parseClock(entry.videoStartsAt) : 0;
   if (videoStart === null) throw new Error("The camera start time isn't a clock time.");
+  const from = entry.window ? parseClock(entry.window.from) : null;
+  const to = entry.window ? parseClock(entry.window.to) : null;
+  const inWindow = (r: BadgeRecording) => (from === null || r.startSec >= from) && (to === null || r.startSec <= to);
   const audioDir = path.join(ctx.workDir, "audio");
   const samFile = path.join(ctx.workDir, "sam.mp4");
 
   const prepared = await stepRun(deps, "prepare", async () => {
     await mkdir(audioDir, { recursive: true });
-    const recordings = await deps.recordings(entry.store, entry.date);
-    const videoSeconds = await deps.probeSeconds(ctx.videoFile);
+    const recordings = (await deps.recordings(entry.store, entry.date)).filter(inWindow);
+    const videoSeconds = hasVideo ? await deps.probeSeconds(ctx.videoFile) : 0;
     if (videoSeconds === null) throw new Error("The camera file couldn't be read.");
     if (videoSeconds > MAX_VIDEO_SECONDS) throw new Error(`The camera file is longer than ${MAX_VIDEO_SECONDS / 60} minutes. Trim it and try again.`);
     const [chunks] = await Promise.all([
       Promise.all(recordings.map(async (r) => ({ recording: r, chunks: await deps.speechChunks(r.file, audioDir) }))),
-      deps.samVideo(ctx.videoFile, samFile),
+      hasVideo ? deps.samVideo(ctx.videoFile, samFile) : Promise.resolve(),
     ]);
     return {
       value: { chunks, videoSeconds },
-      detail: `${plural(recordings.length, "badge file")} · ${Math.round(videoSeconds)} s of video`,
+      detail: `${plural(recordings.length, "badge file")} · ${hasVideo ? `${Math.round(videoSeconds)} s of video` : "no camera file"}`,
     };
   });
 
@@ -107,7 +118,7 @@ export async function runPipeline(ctx: RunContext, deps: EngineDeps): Promise<Da
     const turns = await mapLimited(jobs, TRANSCRIBE_CONCURRENCY, (j) => deps.transcribe(j.file),
       (done) => void deps.step("transcribe", "running", `${done} of ${jobs.length} parts`));
     const value = jobs.map((j, i): BadgeTranscript => ({
-      repId: j.recording.repId,
+      repId: entry.place ? FIELD_TEST_REP.id : j.recording.repId,
       badgeId: j.recording.badgeId,
       startSec: j.recording.startSec + j.offsetSec,
       turns: turns[i],
@@ -115,7 +126,7 @@ export async function runPipeline(ctx: RunContext, deps: EngineDeps): Promise<Da
     return { value, detail: `${plural(turns.flat().length, "line")} from ${plural(prepared.chunks.length, "badge file")}` };
   });
 
-  const frames = await stepRun(deps, "track", async () => {
+  const frames = hasVideo ? await stepRun(deps, "track", async () => {
     const fileId = await deps.uploadVideo(samFile);
     try {
       const staffLook = STAFF_LOOK[entry.store] ?? "person wearing a staff uniform";
@@ -124,10 +135,10 @@ export async function runPipeline(ctx: RunContext, deps: EngineDeps): Promise<Da
     } finally {
       await deps.deleteUpload(fileId);
     }
-  });
+  }) : await skipStep(deps, "track", "No camera file today: audio only", { people: [] as Frame[], staff: [] as Frame[] });
 
   const timeline = await stepRun(deps, "timeline", async () => {
-    const conversations = buildConversations(transcripts);
+    const conversations = buildConversations(transcripts, undefined, entry.badgeWornBy ?? "rep");
     const camera = summariseCamera(frames.people, frames.staff, videoStart, VIDEO_FPS);
     return {
       value: { conversations, camera },
@@ -136,13 +147,15 @@ export async function runPipeline(ctx: RunContext, deps: EngineDeps): Promise<Da
   });
 
   return stepRun(deps, "report", async () => {
-    const common = { date: entry.date, sales: entry.sales, team: ctx.team, complaints: entry.complaints, ...timeline };
+    const includeCustomer = entry.badgeWornBy === "shopper" ? entry.includeCustomer ?? true : true;
+    const common = { date: entry.date, sales: entry.sales, team: ctx.team, complaints: entry.complaints, includeCustomer, ...timeline };
     const prompt = buildReportPrompt({
       ...common,
-      storeName: ctx.storeName,
-      storeKind: ctx.storeKind,
-      cameraFrom: videoStart,
-      cameraTo: videoStart + prepared.videoSeconds,
+      storeName: entry.place ?? ctx.storeName,
+      storeKind: entry.place ? "Store visited on a field test" : ctx.storeKind,
+      cameraFrom: hasVideo ? videoStart : null,
+      cameraTo: hasVideo ? videoStart + prepared.videoSeconds : null,
+      shopperWore: entry.badgeWornBy === "shopper",
     });
     const report = assembleReport(await deps.writeReport(prompt), common);
     await deps.saveReport(entry.store, report);

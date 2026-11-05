@@ -10,7 +10,7 @@ const freshSteps = (): Step[] => STEP_ORDER.map((id) => ({ id, label: STEP_LABEL
 
 const entryFile = (id: string) => dataPath("entries", `${id}.json`);
 
-export type NewEntry = { store: string; date: string; videoStartsAt: string; sales: number; complaints: Complaint[] };
+export type NewEntry = Pick<Entry, "store" | "date" | "videoStartsAt" | "sales" | "complaints" | "window" | "badgeWornBy" | "place" | "includeCustomer">;
 
 export async function createEntry(input: NewEntry): Promise<Entry> {
   const now = new Date().toISOString();

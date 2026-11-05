@@ -22,6 +22,7 @@ const sparkReply: SparkReport = {
   moments: [{ conversationId: "c1", kind: "walkout", title: "Sent away", customer: "A student.", quote: "check the website", cameraNotes: [], happened: "x", tryInstead: "y" }],
   disputes: [{ complaintIndex: 0, conversationId: "c1", title: "Ignored?", finding: "He answered at once.", verdict: "cleared", outcome: "Thank them." }],
   notes: [{ repId: "jake", note: "Learn the plans." }],
+  customerSpeakers: [],
 };
 
 function fakes() {

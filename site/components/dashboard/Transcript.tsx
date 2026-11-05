@@ -4,10 +4,10 @@ import type { Line } from "./reports/types";
 export function Transcript({ lines, repName }: { lines: Line[]; repName: string }) {
   return (
     <ol className="transcript">
-      {lines.map((l) => (
-        <li key={l.at + l.who} className={`is-${l.who}`}>
+      {lines.map((l, i) => (
+        <li key={`${i}-${l.at}`} className={`is-${l.who}`}>
           <span className="mono transcript-at">{l.at}</span>
-          <span className="transcript-who">{l.who === "rep" ? repName : "Customer"}</span>
+          <span className="transcript-who">{l.speaker ? `Speaker ${l.speaker.split("/").pop()}` : l.who === "rep" ? repName : "Customer"}</span>
           <span className="transcript-text">
             {l.who === "rep" ? `“${l.text}”` : l.text}
           </span>

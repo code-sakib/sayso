@@ -38,6 +38,7 @@ export const SparkReport = z.strictObject({
   moments: z.array(SparkMoment),
   disputes: z.array(SparkDispute),
   notes: z.array(z.strictObject({ repId: z.string(), note: z.string() })),
+  customerSpeakers: z.array(z.string()).describe("Field test only: every [file time/speaker] label that is the shopper, like 21:47/B; empty otherwise"),
 });
 
 export type SparkReport = z.infer<typeof SparkReport>;

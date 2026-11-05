@@ -10,7 +10,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const entry = await getEntry(id);
   if (!entry) return fail(404, "No such entry.");
-  if (!entry.video) return fail(400, "Upload the camera file first.");
+  // An audio-only entry says so with an empty camera start time
+  if (!entry.video && entry.videoStartsAt !== "") return fail(400, "Upload the camera file first.");
   if (!modelApiKey()) return fail(503, "The server has no Meta API key yet, so it can't process entries.");
   if (!allowRun(visitorOf(req))) return fail(429, "That's a lot of runs for one hour. Try again later.");
   if (!startEntry(entry)) return fail(409, "This entry is already being processed.");

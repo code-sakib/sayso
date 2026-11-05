@@ -20,7 +20,11 @@ export const entryInput = (store: string) => {
   const team = new Set(profilesIn(store).map((p) => p.id));
   return z.strictObject({
     date: isoDate,
-    videoStartsAt: clock,
+    videoStartsAt: z.union([clock, z.literal("")]),
+    window: z.strictObject({ from: clock, to: clock }).optional(),
+    badgeWornBy: z.enum(["rep", "shopper"]).optional(),
+    includeCustomer: z.boolean().optional(),
+    place: z.string().trim().min(2).max(80).optional(),
     sales: z.number().int().min(0).max(10_000),
     complaints: z.array(z.strictObject({
       time: clock,

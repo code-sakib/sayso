@@ -1,11 +1,11 @@
-import { profileById } from "../store/staff";
+import { repCardById } from "../store/staff";
 import type { Dispute } from "./reports/types";
 import { DISPUTE_KIND, VERDICT } from "./kinds";
 import { Transcript } from "./Transcript";
 
 /** A customer's complaint about a rep, next to what the badge actually recorded. */
 export function DisputeCard({ dispute }: { dispute: Dispute }) {
-  const rep = profileById(dispute.repId);
+  const rep = repCardById(dispute.repId);
   const verdict = VERDICT[dispute.verdict];
   const firstName = rep?.name.split(" ")[0] ?? "Rep";
   return (

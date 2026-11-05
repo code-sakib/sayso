@@ -1,4 +1,4 @@
-import { profileById } from "../store/staff";
+import { repCardById } from "../store/staff";
 import type { RepNote } from "./reports/types";
 import { initials } from "./kinds";
 
@@ -7,7 +7,7 @@ export function RepNotes({ notes }: { notes: RepNote[] }) {
   return (
     <ul className="rep-notes">
       {notes.map((n) => {
-        const rep = profileById(n.repId);
+        const rep = repCardById(n.repId);
         return (
           <li key={n.repId}>
             <span className="dash-avatar is-soft">{initials(rep?.name ?? n.repId)}</span>

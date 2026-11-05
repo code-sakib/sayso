@@ -4,7 +4,7 @@
 
 import type { BranchId } from "../branches";
 
-export type Speaker = "rep" | "customer";
+export type Speaker = "rep" | "senior" | "customer";
 export type CaseLine = { at: number; who: Speaker; text: string };
 type Spot = { x: number; z: number };
 
@@ -19,6 +19,8 @@ export type StoreCase = {
   /** Where the customer stops, and where the rep stands to talk to them. */
   customerSpot: Spot;
   repSpot: Spot;
+  /** A second rep the first one calls over, and where they stand. Their badge records them too. */
+  senior?: { id: string; spot: Spot };
   /** Walkway point the customer passes on the way in and out (keeps them off the tables). */
   via: Spot;
   lines: CaseLine[];
@@ -42,26 +44,28 @@ export const AFTER_TALK = 1.6;
 
 export const CASES: StoreCase[] = [
   {
-    id: "rude-line",
-    title: "Brushed off",
+    id: "sized-up",
+    title: "Judged the budget",
     outcome: "walkout",
     branch: "electronics",
     repId: "jake",
     section: "Mobiles",
     customerSpot: { x: -3, z: -2.4 },
     repSpot: { x: -1.9, z: -2.4 },
+    senior: { id: "priya", spot: { x: -1.5, z: -1.4 } },
     via: { x: -0.25, z: -0.5 },
     lines: [
-      { at: 0.4, who: "customer", text: "Hi, does this phone come on a monthly plan?" },
-      { at: 4, who: "rep", text: "It's all on the website, man." },
-      { at: 7.6, who: "customer", text: "Could you just walk me through it?" },
-      { at: 11.2, who: "rep", text: "Kinda busy. Give me a minute." },
+      { at: 0.4, who: "customer", text: "Hi, I'm looking for a phone with a really good camera." },
+      { at: 4, who: "rep", text: "Sure. Priya, can you help? He wants a camera phone." },
+      { at: 7.6, who: "senior", text: "Of course. Shall I show him the new Pro?" },
+      { at: 11.2, who: "rep", text: "Skip the Pro. Show him the basic ones, more his budget." },
+      { at: 14.8, who: "customer", text: "I can decide my own budget, thanks." },
     ],
     summary: {
-      happened: "The customer asked about a monthly plan. Jake pointed them to the website and turned away. They left 40 seconds later without buying.",
-      moment: "“It's all on the website, man.”",
-      tryInstead: "“Sure. It's $37 a month over 24 months. Want me to show you the two plans side by side?”",
-      facts: [["Talk time", "0:52"], ["Camera", "Walked out 0:40 after"], ["Lost sale", "Phone · $899"]],
+      happened: "The customer asked for a phone with a great camera. Jake called Priya over, then told her to skip the flagship and show the basic models instead. The customer heard it and left without buying.",
+      moment: "“Skip the Pro. Show him the basic ones, more his budget.”",
+      tryInstead: "“Here's the Pro, our best camera. It's $46 a month, or I can show you the mid-range one next to it.” Let the customer choose the budget.",
+      facts: [["Talk time", "0:48"], ["Camera", "Walked out 0:20 after"], ["Lost sale", "Phone · $1,099"]],
     },
   },
   {

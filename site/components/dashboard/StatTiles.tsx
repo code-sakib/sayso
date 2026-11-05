@@ -1,15 +1,14 @@
-import { money } from "./kinds";
 import { conversion } from "./reports/week";
 
 type Counts = { customers: number; conversations: number; sales: number; walkouts: number; lostValue: number };
 
-/** The headline numbers for a day or a week. */
-export function StatTiles({ counts }: { counts: Counts }) {
+/** The headline numbers for a day or a week. `improvements` counts the coaching moments that were not a win. */
+export function StatTiles({ counts, improvements }: { counts: Counts; improvements: number }) {
   const tiles = [
     { label: "Customers", value: counts.customers, sub: `${counts.conversations} talked to staff` },
     { label: "Sales", value: counts.sales, sub: `${conversion(counts)}% of customers bought` },
     { label: "Walkouts", value: counts.walkouts, sub: "Left after talking to staff", isBad: counts.walkouts > 0 },
-    { label: "Lost to walkouts", value: money(counts.lostValue), sub: "From what they were looking at", isBad: counts.lostValue > 0 },
+    { label: "Improvements needed", value: improvements, sub: improvements === 1 ? "Moment to coach in the report" : "Moments to coach in the reports" },
   ];
   return (
     <dl className="dash-stats">
