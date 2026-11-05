@@ -61,7 +61,7 @@ export function FlowSection() {
           <div className="flow-left">
             <header className="flow-head">
               <span className="eyebrow">After closing · {branch?.street ?? "Main St"}</span>
-              <h2 className="h2" id="flow-title">Every badge and the camera hand over their day.</h2>
+              <h2 className="h2" id="flow-title">Every badge hands over its day. Your CCTV can join too.</h2>
             </header>
             <div className="flow-slots">
               {files.map((f, i) => (
