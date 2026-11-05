@@ -18,6 +18,9 @@ export function CameraSection() {
   const [ref, inView] = useInView<HTMLDivElement>();
   return (
     <section className="section badge-section" id="camera" aria-labelledby="camera-title">
+      <header className="container camera-head">
+        <h2 className="h2">Future aspiration</h2>
+      </header>
       <div className="container badge-grid">
         <div className="badge-showcase" ref={ref}>
           <div className="badge-showcase-stage">
@@ -26,8 +29,8 @@ export function CameraSection() {
           <span className="hero-device-hint">Drag to turn</span>
         </div>
         <div className="badge-info">
-          <span className="eyebrow">Coming next · SaySo camera</span>
-          <h2 className="h2" id="camera-title">One camera that hears and sees the whole floor.</h2>
+          <span className="eyebrow">SaySo camera</span>
+          <h3 className="h2" id="camera-title">One camera that hears and sees the whole floor.</h3>
           <p className="lead">The next SaySo device records audio and video together, so a store gets every report without a badge on each rep.</p>
           <ul className="camera-features">
             {FEATURES.map((f) => (
